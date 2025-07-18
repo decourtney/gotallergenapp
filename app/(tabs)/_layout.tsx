@@ -30,18 +30,27 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Profile",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <IconSymbol size={28} name="person-circle-sharp" color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="productQuery"
         options={{
-          title: "Settings",
+          title: "Scan",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="gear" color={color} />
+            <IconSymbol size={28} name="search-circle-sharp" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="previousQueries"
+        options={{
+          title: "Lists",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="list-circle-sharp" color={color} />
           ),
         }}
       />

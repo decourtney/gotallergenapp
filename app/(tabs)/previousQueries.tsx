@@ -1,22 +1,20 @@
-import { useNavigation, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useNavigation } from "expo-router";
+import React, { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function Index() {
-  const router = useRouter();
+export default function PreviousQueries() {
   const navigation = useNavigation();
 
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      title: "My Preferences",
+      title: "Previously Viewed",
     });
   }, [navigation]);
 
   return (
     <View style={styles.container}>
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-      {/* <Button title="Scanner" onPress={()=> router.push("/barcodescanner")}></Button> */}
+      <Text>settings</Text>
     </View>
   );
 }

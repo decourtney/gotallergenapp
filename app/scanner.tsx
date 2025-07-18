@@ -1,3 +1,4 @@
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import {
   BarcodeScanningResult,
   CameraType,
@@ -5,10 +6,20 @@ import {
   useCameraPermissions,
 } from "expo-camera";
 import { useRef, useState } from "react";
-import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Button,
+  StyleSheet,
+  Text,
+  TouchableHighlight,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Scanner() {
+  const insets = useSafeAreaInsets();
   const [facing, setFacing] = useState<CameraType>("back");
+  const [flashMode, setFlashMode] = useState<"off" | "on">("off");
   const [permission, requestPermission] = useCameraPermissions();
   const pendingDataRef = useRef<string | null>(null);
   const FOOD_BARCODE_TYPES = [
@@ -17,6 +28,8 @@ export default function Scanner() {
     "upc_a", // US retail
     "upc_e", // Compressed version of UPC-A
   ];
+
+  const exmapleBarcodeData = "037466039411"; // Example UPC-A barcode
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -55,15 +68,53 @@ export default function Scanner() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
       <CameraView
-        style={styles.camera}
+        style={[styles.camera]}
         facing={facing}
+        flash={flashMode}
         onBarcodeScanned={onBarCodeScanned}
       >
-        <TouchableOpacity style={styles.scanButton} onPress={handleManualScan}>
-          <Text style={styles.scanButtonText}>Scan Now</Text>
-        </TouchableOpacity>
+        <View
+          style={{ height: insets.top, backgroundColor: "rgba(0,0,0,0.2)" }}
+        ></View>
+        <View style={{ flex: 1 }}>
+          {/* Top Left Corner */}
+          <View style={[styles.cornerFrame, styles.topLeft]} />
+
+          {/* Top Right Corner */}
+          <View style={[styles.cornerFrame, styles.topRight]} />
+
+          {/* Bottom Left Corner */}
+          <View style={[styles.cornerFrame, styles.bottomLeft]} />
+
+          {/* Bottom Right Corner */}
+          <View style={[styles.cornerFrame, styles.bottomRight]} />
+
+          <View style={[styles.icon, styles.searchIcon]}>
+            <IconSymbol size={28} name="search-sharp" color="white" />
+          </View>
+
+          <TouchableHighlight
+            style={[styles.icon, styles.reverseIcon]}
+            underlayColor={"rgba(255, 255, 255, 0.2)"}
+            onPress={() => setFacing(facing === "back" ? "front" : "back")}
+          >
+            <IconSymbol size={20} name="camera-reverse-sharp" color="white" />
+          </TouchableHighlight>
+
+          <TouchableHighlight
+            style={[styles.icon, styles.flashIcon]}
+            underlayColor={"rgba(255, 255, 255, 0.2)"}
+            onPress={() => setFlashMode(flashMode === "off" ? "on" : "off")}
+          >
+            {flashMode === "off" ? (
+              <IconSymbol size={20} name="flash-sharp" color="white" />
+            ) : (
+              <IconSymbol size={20} name="flash-off-sharp" color="white" />
+            )}
+          </TouchableHighlight>
+        </View>
       </CameraView>
     </View>
   );
@@ -72,35 +123,74 @@ export default function Scanner() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
   },
   message: {
     textAlign: "center",
     paddingBottom: 10,
   },
   camera: {
-    flex: 1,
+    height: "35%",
   },
   text: {
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
   },
-  scanButton: {
+  icon: {
     position: "absolute",
-    bottom: 200,
-    alignSelf: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 6,
+    padding: 10,
+    opacity:1,
+    borderRadius: "100%",
   },
-
+  searchIcon: {
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
+  },
+  reverseIcon: {
+    bottom: 10,
+    left: 10,
+  },
+  flashIcon: {
+    bottom: 10,
+    right: 10,
+  },
+  cornerFrame: {
+    position: "absolute",
+    width: 20,
+    height: 20,
+    opacity: 1,
+    borderColor: "white", // or use Colors.light.tint for theme consistency
+    borderWidth: 2,
+  },
+  topLeft: {
+    top: 10,
+    left: 10,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 12,
+  },
+  topRight: {
+    top: 10,
+    right: 10,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 12,
+  },
+  bottomLeft: {
+    bottom: 10,
+    left: 10,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 12,
+  },
+  bottomRight: {
+    bottom: 10,
+    right: 10,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 12,
+  },
   scanButtonText: {
     color: "#fff",
     fontSize: 16,
