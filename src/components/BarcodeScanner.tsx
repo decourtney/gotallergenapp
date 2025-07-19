@@ -1,4 +1,4 @@
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { IconSymbol } from "@/src/components/ui/IconSymbol";
 import {
   BarcodeScanningResult,
   CameraType,
@@ -17,7 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface BarcodeScannerProps {
-  onBarcodeCapture?: (barcode: string) => void;
+  onBarcodeCapture?: (barcode: string | null) => void;
 }
 
 export default function BarcodeScanner({
@@ -68,7 +68,17 @@ export default function BarcodeScanner({
   };
 
   const handleManualScan = () => {
-    pendingDataRef.current = null;
+    // // Clear the pending data and notify the parent component
+    // pendingDataRef.current = null;
+    // if (onBarcodeCapture) {
+    //   onBarcodeCapture(null); // Clear the captured barcode
+    // }
+
+    // Simulate a manual scan for demonstration purposes
+    // Example UPC-A barcode 037466039411
+    if (onBarcodeCapture) {
+      onBarcodeCapture("037466039411"); // Simulate a manual scan
+    }
   };
 
   return (
