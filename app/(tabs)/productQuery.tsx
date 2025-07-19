@@ -2,6 +2,7 @@ import BarcodeScanner from "@/src/components/BarcodeScanner";
 import React, { useEffect, useState } from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
   import exampleProduct from "@/exampleProduct.json";
+import ProductNameSearch from "@/src/components/ProductNameSearch";
 
 export default function ProductQuery() {
   const [capturedBarcode, setCapturedBarcode] = useState<string | null>(null);
@@ -63,6 +64,8 @@ export default function ProductQuery() {
           }}
         />
       </View>
+
+      <ProductNameSearch />
     </View>
   );
 }
