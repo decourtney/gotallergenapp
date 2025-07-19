@@ -1,3 +1,4 @@
+import { HeaderTitle } from "@react-navigation/elements";
 import { useNavigation } from "expo-router";
 import React, { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -8,7 +9,7 @@ export default function PreviousQueries() {
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      title: "Previously Viewed",
+      headerTitle: "Previously Viewed",
     });
   }, [navigation]);
 

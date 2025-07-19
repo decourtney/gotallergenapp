@@ -11,12 +11,18 @@ import {
   StyleSheet,
   Text,
   TouchableHighlight,
-  TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function Scanner() {
+interface BarcodeScannerProps {
+  onBarcodeCapture?: (barcode: string) => void;
+}
+
+export default function BarcodeScanner({
+  onBarcodeCapture,
+}: BarcodeScannerProps) {
   const insets = useSafeAreaInsets();
   const [facing, setFacing] = useState<CameraType>("back");
   const [flashMode, setFlashMode] = useState<"off" | "on">("off");
@@ -28,8 +34,6 @@ export default function Scanner() {
     "upc_a", // US retail
     "upc_e", // Compressed version of UPC-A
   ];
-
-  const exmapleBarcodeData = "037466039411"; // Example UPC-A barcode
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -49,26 +53,29 @@ export default function Scanner() {
   }
 
   const onBarCodeScanned = (scanned: BarcodeScanningResult) => {
+    // Check if the scanned barcode type is one of the supported types
     if (!FOOD_BARCODE_TYPES.includes(scanned.type)) {
       console.warn("Unsupported barcode type:", scanned.type);
       return;
     }
 
-    if (scanned.data !== pendingDataRef.current) {
+    // If the scanned data is different from the pending data, update it
+    if (scanned.data !== pendingDataRef.current && onBarcodeCapture) {
+      console.log("Barcode scanned:", scanned.data);
       pendingDataRef.current = scanned.data;
+      onBarcodeCapture(scanned.data);
     }
   };
 
   const handleManualScan = () => {
-    const current = pendingDataRef.current;
-    if (current) {
-      console.log("User confirmed:", current);
-      // Store or process current barcode
-    }
+    pendingDataRef.current = null;
   };
 
   return (
-    <View style={[styles.container]}>
+    <TouchableWithoutFeedback
+      style={[styles.container]}
+      onPress={handleManualScan}
+    >
       <CameraView
         style={[styles.camera]}
         facing={facing}
@@ -100,7 +107,7 @@ export default function Scanner() {
             underlayColor={"rgba(255, 255, 255, 0.2)"}
             onPress={() => setFacing(facing === "back" ? "front" : "back")}
           >
-            <IconSymbol size={20} name="camera-reverse-sharp" color="white" />
+            <IconSymbol size={28} name="camera-reverse-sharp" color="white" />
           </TouchableHighlight>
 
           <TouchableHighlight
@@ -109,14 +116,14 @@ export default function Scanner() {
             onPress={() => setFlashMode(flashMode === "off" ? "on" : "off")}
           >
             {flashMode === "off" ? (
-              <IconSymbol size={20} name="flash-sharp" color="white" />
+              <IconSymbol size={28} name="flash-sharp" color="white" />
             ) : (
-              <IconSymbol size={20} name="flash-off-sharp" color="white" />
+              <IconSymbol size={28} name="flash-off-sharp" color="white" />
             )}
           </TouchableHighlight>
         </View>
       </CameraView>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -139,7 +146,7 @@ const styles = StyleSheet.create({
   icon: {
     position: "absolute",
     padding: 10,
-    opacity:1,
+    opacity: 1,
     borderRadius: "100%",
   },
   searchIcon: {

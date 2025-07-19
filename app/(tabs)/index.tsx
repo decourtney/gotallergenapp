@@ -3,20 +3,18 @@ import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
-  const router = useRouter();
   const navigation = useNavigation();
 
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      title: "My Preferences",
+      headerTitle: "My Preferences",
     });
   }, [navigation]);
 
   return (
     <View style={styles.container}>
       <Text>Edit app/index.tsx to edit this screen.</Text>
-      {/* <Button title="Scanner" onPress={()=> router.push("/barcodescanner")}></Button> */}
     </View>
   );
 }
