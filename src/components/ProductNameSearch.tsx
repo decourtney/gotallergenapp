@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import SearchBar from "../components/SearchBar";
 
 export default function ProductNameSearch() {
-  const [query, setQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchTerm) {
+      // send search term to productQuery.tsx
+      console.log("Search term updated:", searchTerm);
+    }
+  }, [searchTerm]);
 
   return (
     <View style={styles.container}>
@@ -15,8 +22,7 @@ export default function ProductNameSearch() {
           <Text style={styles.textBold}>search</Text> for a product
         </Text>
       </View>
-      <SearchBar value={query} onChange={setQuery} />
-      {/* Render query results here */}
+      <SearchBar setSearchTerm={setSearchTerm} />
     </View>
   );
 }
@@ -30,10 +36,10 @@ const styles = StyleSheet.create({
     backgroundColor: "green",
     borderRadius: 10,
   },
-  text:{
+  text: {
     fontSize: 16,
     textAlign: "center",
-    fontWeight: "400"
+    fontWeight: "400",
   },
   textBold: {
     fontWeight: "800",

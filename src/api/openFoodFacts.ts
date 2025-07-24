@@ -24,3 +24,18 @@ export const getProductInfo = async (barcode: string) => {
     throw error;
   }
 };
+
+export const getProductInfoByName = async (name: string) => {
+  try {
+    const response = await api.get(`/search/${name}`);
+
+    if (response.data.count > 0) {
+      return response.data.products;
+    } else {
+      throw new Error("No products found");
+    }
+  } catch (error) {
+    console.error("Error fetching products by name:", error);
+    throw error;
+  }
+};
