@@ -29,7 +29,7 @@ export default function ProductNameSearch() {
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: "25%",
+    height: "100%",
     padding: 16,
     justifyContent: "space-between",
     alignItems: "center",

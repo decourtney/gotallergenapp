@@ -6,6 +6,7 @@ import {
   TextInputKeyPressEventData,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
 
 type Props = {
   setSearchTerm: Dispatch<SetStateAction<string | null>>;
