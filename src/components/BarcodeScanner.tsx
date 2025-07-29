@@ -43,7 +43,12 @@ export default function BarcodeScanner({
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          { flex: 1, justifyContent: "center", height: "100%" },
+        ]}
+      >
         <Text style={styles.message}>
           We need your permission to use the camera
         </Text>
@@ -146,7 +151,7 @@ export default function BarcodeScanner({
 const styles = StyleSheet.create({
   container: {
     position: "relative",
-    maxHeight:"35%"
+    maxHeight: "35%",
   },
   text: {
     fontSize: 24,
