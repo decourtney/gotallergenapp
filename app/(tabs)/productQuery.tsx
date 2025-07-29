@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import exampleProduct from "@/exampleProduct.json"; // Adjust the path as necessary
+import { useFocusEffect } from "expo-router";
 
 export default function ProductQuery() {
   const [capturedBarcode, setCapturedBarcode] = useState<string | null>(null);
@@ -18,6 +19,22 @@ export default function ProductQuery() {
   const flatListRef = React.useRef<FlatList>(null);
   const { width } = useWindowDimensions();
   const CARD_WIDTH = width - 32;
+
+  // Clear data when navigating away from this screen and reset flatlist position
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("ProductQuery screen focused");
+
+      return () => {
+        console.log("ProductQuery screen unfocused - clearing data");
+        setProductData([]);
+        setCapturedBarcode(null);
+        if (flatListRef.current) {
+          flatListRef.current.scrollToOffset({ offset: 0, animated: false });
+        }
+      };
+    }, [])
+  );
 
   // Effect to load example product when barcode is captured
   useEffect(() => {
