@@ -1,4 +1,5 @@
 import exampleProduct from "@/exampleProduct.json"; // Adjust the path as necessary
+import { getProductInfo } from "@/src/api/openFoodFacts";
 import BarcodeScanner from "@/src/components/BarcodeScanner";
 import ProductNameSearch from "@/src/components/ProductNameSearch";
 import { useFocusEffect } from "expo-router";
@@ -82,9 +83,30 @@ export default function ProductQuery() {
   //   if (capturedBarcode) {
   //     // Fetch product info when a barcode is captured
   //     console.log("Fetching product info for barcode:", capturedBarcode);
+
+  //     // Use the getProductInfo function to fetch product data
   //     getProductInfo(capturedBarcode)
   //       .then((product) => {
-  //         setProductData((prevData) => [...prevData, product]);
+  //         setProductData((prevData) => {
+  //           // Check if product already exists by _id
+  //           const existingIndex = prevData.findIndex(
+  //             (item) => item["_id"] === product["_id"]
+  //           );
+
+  //           if (existingIndex >= 0) {
+  //             // Product exists, scroll to it (add 1 for search card offset)
+  //             console.log("Product already exists, scrolling to existing item");
+  //             scrollToIndex(existingIndex + 1);
+  //             return prevData; // Don't modify the array
+  //           } else {
+  //             // Product doesn't exist, add it
+  //             console.log("Adding new product:", product["product_name"]);
+  //             const updatedData = [...prevData, product];
+  //             // Scroll to the new item (add 1 for search card offset)
+  //             setTimeout(() => scrollToIndex(updatedData.length), 0);
+  //             return updatedData;
+  //           }
+  //         });
   //       })
   //       .catch((error) => {
   //         console.error("Error fetching product info:", error);
