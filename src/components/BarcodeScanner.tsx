@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
   container: {
     position: "relative",
     maxHeight: "35%",
+    minHeight: "35%",
   },
   text: {
     fontSize: 24,

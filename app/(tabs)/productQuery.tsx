@@ -1,17 +1,15 @@
-import { getProductInfo } from "@/src/api/openFoodFacts";
+import exampleProduct from "@/exampleProduct.json"; // Adjust the path as necessary
 import BarcodeScanner from "@/src/components/BarcodeScanner";
 import ProductNameSearch from "@/src/components/ProductNameSearch";
+import { useFocusEffect } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
-  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
-import exampleProduct from "@/exampleProduct.json"; // Adjust the path as necessary
-import { useFocusEffect } from "expo-router";
 
 export default function ProductQuery() {
   const [capturedBarcode, setCapturedBarcode] = useState<string | null>(null);
@@ -36,22 +34,45 @@ export default function ProductQuery() {
     }, [])
   );
 
+  // Function to scroll to a specific index in the FlatList
+  const scrollToIndex = (index: number) => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToIndex({
+        index: index,
+        animated: true,
+      });
+    }
+  };
+
   // Effect to load example product when barcode is captured
   useEffect(() => {
     if (capturedBarcode) {
       console.log("Loading example product for barcode:", capturedBarcode);
-      // Simulate API delay
       setTimeout(() => {
         const newProduct = {
           ...exampleProduct["Product Info"],
-          id: capturedBarcode, // Use barcode as unique ID
-          barcode: capturedBarcode,
         };
-        setProductData((prevData) => [...prevData, newProduct]);
-        console.log(
-          "Example product loaded:",
-          exampleProduct["Product Info"]["product_name"]
-        );
+
+        setProductData((prevData) => {
+          // Check if product already exists by _id
+          const existingIndex = prevData.findIndex(
+            (item) => item["_id"] === newProduct["_id"]
+          );
+
+          if (existingIndex >= 0) {
+            // Product exists, scroll to it (add 1 for search card offset)
+            console.log("Product already exists, scrolling to existing item");
+            scrollToIndex(existingIndex + 1);
+            return prevData; // Don't modify the array
+          } else {
+            // Product doesn't exist, add it
+            console.log("Adding new product:", newProduct["product_name"]);
+            const updatedData = [...prevData, newProduct];
+            // Scroll to the new item (add 1 for search card offset)
+            setTimeout(() => scrollToIndex(updatedData.length), 0);
+            return updatedData;
+          }
+        });
       }, 500);
     }
   }, [capturedBarcode]);
@@ -72,15 +93,15 @@ export default function ProductQuery() {
   // }, [capturedBarcode]);
 
   // Effect to scroll to the last product when new data is added
-  useEffect(() => {
-    if (flatListRef.current && productData.length > 0) {
-      const lastIndex = productData.length;
-      flatListRef.current.scrollToIndex({
-        index: lastIndex,
-        animated: true,
-      });
-    }
-  }, [productData]);
+  // useEffect(() => {
+  //   if (flatListRef.current && productData.length > 0) {
+  //     const lastIndex = productData.length;
+  //     flatListRef.current.scrollToIndex({
+  //       index: lastIndex,
+  //       animated: true,
+  //     });
+  //   }
+  // }, [productData]);
 
   const handleBarcodeCapture = (barcode: string | null) => {
     setCapturedBarcode(barcode);
