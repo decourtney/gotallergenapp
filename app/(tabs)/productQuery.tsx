@@ -1,9 +1,11 @@
-import exampleProduct from "@/exampleProduct.json"; // Adjust the path as necessary
-import { getProductInfo } from "@/src/api/openFoodFacts";
 import BarcodeScanner from "@/src/components/BarcodeScanner";
+import { ProductCard } from "@/src/components/ProductCard";
 import ProductNameSearch from "@/src/components/ProductNameSearch";
+import { useFlatListScroll } from "@/src/hooks/useFlatListScroll";
+import { useProductData } from "@/src/hooks/useProductData";
+import { useProductFetch } from "@/src/hooks/useProductFetch";
 import { useFocusEffect } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -12,133 +14,95 @@ import {
   View,
 } from "react-native";
 
+const SEARCH_CARD_OFFSET = 1; // Account for search card at index 0
+
 export default function ProductQuery() {
   const [capturedBarcode, setCapturedBarcode] = useState<string | null>(null);
-  const [productData, setProductData] = useState<any[]>([]);
-  const flatListRef = React.useRef<FlatList>(null);
   const { width } = useWindowDimensions();
   const CARD_WIDTH = width - 32;
 
-  // Clear data when navigating away from this screen and reset flatlist position
+  // Custom hooks
+  const { products, addProduct, clearProducts, findProductByBarcode } =
+    useProductData();
+  const { flatListRef, scrollToIndex, resetScroll } = useFlatListScroll();
+
+  // Memoize the callback to prevent useEffect re-runs
+  const handleProductLoaded = useCallback(
+    (product: any) => {
+      const result = addProduct(product);
+
+      if (result.isNew) {
+        console.log(
+          "Adding new product:",
+          product.product_name || product.product_name_en
+        );
+        // Scroll to new item after state update
+        setTimeout(() => scrollToIndex(result.index + SEARCH_CARD_OFFSET), 0);
+      } else {
+        console.log("Product already exists, scrolling to existing item");
+        scrollToIndex(result.index + SEARCH_CARD_OFFSET);
+      }
+
+      return result;
+    },
+    [addProduct, scrollToIndex]
+  );
+
+  // Handle barcode capture with validation
+  const handleBarcodeCapture = useCallback(
+    (barcode: string | null) => {
+      console.log("Barcode captured:", barcode);
+
+      // Only process valid barcodes
+      if (!barcode || barcode.trim() === "") return;
+
+      // Check if product already exists
+      const existingProduct = findProductByBarcode(barcode);
+      if (existingProduct.exists) {
+        console.log("Product already exists, scrolling to existing item");
+        scrollToIndex(existingProduct.index + SEARCH_CARD_OFFSET);
+        return;
+      }
+
+      // New barcode - proceed with fetch
+      setCapturedBarcode(barcode);
+    },
+    [findProductByBarcode, scrollToIndex]
+  );
+
+  // Fetch product when barcode changes (only called with valid barcodes)
+  const { isLoading, error } = useProductFetch(
+    capturedBarcode || "", // This ensures we pass a string, but empty string is handled in the hook
+    handleProductLoaded
+  );
+
+  // Clear data when navigating away from this screen
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       console.log("ProductQuery screen focused");
 
       return () => {
         console.log("ProductQuery screen unfocused - clearing data");
-        setProductData([]);
+        clearProducts();
         setCapturedBarcode(null);
-        if (flatListRef.current) {
-          flatListRef.current.scrollToOffset({ offset: 0, animated: false });
-        }
+        resetScroll();
       };
-    }, [])
+    }, [clearProducts, resetScroll])
   );
 
-  // Function to scroll to a specific index in the FlatList
-  const scrollToIndex = (index: number) => {
-    if (flatListRef.current) {
-      flatListRef.current.scrollToIndex({
-        index: index,
-        animated: true,
-      });
-    }
-  };
-
-  // Effect to load example product when barcode is captured
-  useEffect(() => {
-    if (capturedBarcode) {
-      console.log("Loading example product for barcode:", capturedBarcode);
-      setTimeout(() => {
-        const newProduct = {
-          ...exampleProduct["Product Info"],
-        };
-
-        setProductData((prevData) => {
-          // Check if product already exists by _id
-          const existingIndex = prevData.findIndex(
-            (item) => item["_id"] === newProduct["_id"]
-          );
-
-          if (existingIndex >= 0) {
-            // Product exists, scroll to it (add 1 for search card offset)
-            console.log("Product already exists, scrolling to existing item");
-            scrollToIndex(existingIndex + 1);
-            return prevData; // Don't modify the array
-          } else {
-            // Product doesn't exist, add it
-            console.log("Adding new product:", newProduct["product_name"]);
-            const updatedData = [...prevData, newProduct];
-            // Scroll to the new item (add 1 for search card offset)
-            setTimeout(() => scrollToIndex(updatedData.length), 0);
-            return updatedData;
-          }
-        });
-      }, 500);
-    }
-  }, [capturedBarcode]);
-
-  // Effect to fetch product info when a barcode is captured
-  // useEffect(() => {
-  //   if (capturedBarcode) {
-  //     // Fetch product info when a barcode is captured
-  //     console.log("Fetching product info for barcode:", capturedBarcode);
-
-  //     // Use the getProductInfo function to fetch product data
-  //     getProductInfo(capturedBarcode)
-  //       .then((product) => {
-  //         setProductData((prevData) => {
-  //           // Check if product already exists by _id
-  //           const existingIndex = prevData.findIndex(
-  //             (item) => item["_id"] === product["_id"]
-  //           );
-
-  //           if (existingIndex >= 0) {
-  //             // Product exists, scroll to it (add 1 for search card offset)
-  //             console.log("Product already exists, scrolling to existing item");
-  //             scrollToIndex(existingIndex + 1);
-  //             return prevData; // Don't modify the array
-  //           } else {
-  //             // Product doesn't exist, add it
-  //             console.log("Adding new product:", product["product_name"]);
-  //             const updatedData = [...prevData, product];
-  //             // Scroll to the new item (add 1 for search card offset)
-  //             setTimeout(() => scrollToIndex(updatedData.length), 0);
-  //             return updatedData;
-  //           }
-  //         });
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching product info:", error);
-  //       });
-  //   }
-  // }, [capturedBarcode]);
-
-  // Effect to scroll to the last product when new data is added
-  // useEffect(() => {
-  //   if (flatListRef.current && productData.length > 0) {
-  //     const lastIndex = productData.length;
-  //     flatListRef.current.scrollToIndex({
-  //       index: lastIndex,
-  //       animated: true,
-  //     });
-  //   }
-  // }, [productData]);
-
-  const handleBarcodeCapture = (barcode: string | null) => {
-    setCapturedBarcode(barcode);
-  };
+  // Prepare data for FlatList
+  const flatListData = [{ type: "search" }, ...products];
 
   return (
-    <View style={[styles.container]}>
+    <View style={styles.container}>
       <BarcodeScanner onBarcodeCapture={handleBarcodeCapture} />
 
       <FlatList
         ref={flatListRef}
         style={[styles.slider, { backgroundColor: "#27F2F5" }]}
-        data={[{ type: "search" }, ...productData]}
+        data={flatListData}
         keyExtractor={(item, index) =>
-          item.type === "search" ? "search" : item["_id"] || index.toString()
+          item.type === "search" ? "search" : item._id || index.toString()
         }
         horizontal
         pagingEnabled
@@ -146,13 +110,12 @@ export default function ProductQuery() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
         ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
-        // scrollToIndex doesnt work without getItemLayout
-        getItemLayout={(data, index) => ({
-          length: CARD_WIDTH + 8, // card width + separator width
+        getItemLayout={(_, index) => ({
+          length: CARD_WIDTH + 8,
           offset: (CARD_WIDTH + 8) * index,
           index,
         })}
-        renderItem={({ item, index }) => {
+        renderItem={({ item }) => {
           if (item.type === "search") {
             return (
               <View style={{ width: CARD_WIDTH }}>
@@ -161,18 +124,19 @@ export default function ProductQuery() {
             );
           }
 
-          return (
-            <View style={{ width: CARD_WIDTH }}>
-              <View style={styles.productInfo}>
-                <Text>
-                  {item["product_name"]}
-                  {item["_id"]}
-                </Text>
-              </View>
-            </View>
-          );
+          return <ProductCard product={item} width={CARD_WIDTH} />;
         }}
       />
+
+      {/* Debug info - remove in production */}
+      {__DEV__ && (
+        <View style={styles.debugInfo}>
+          <Text>Products: {products.length}</Text>
+          <Text>Loading: {isLoading ? "Yes" : "No"}</Text>
+          <Text>Error: {error || "None"}</Text>
+          <Text>Barcode: {capturedBarcode || "None"}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -186,12 +150,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     maxHeight: 200,
   },
-  productInfo: {
-    height: "100%",
-    padding: 16,
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#F5CF27",
-    borderRadius: 10,
+  debugInfo: {
+    padding: 8,
+    backgroundColor: "#f0f0f0",
+    margin: 8,
+    borderRadius: 4,
   },
 });
