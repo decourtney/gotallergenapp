@@ -1,77 +1,159 @@
 import BarcodeScanner from "@/src/components/BarcodeScanner";
-import React, { useEffect, useState } from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
-  import exampleProduct from "@/exampleProduct.json";
+import { ProductCard } from "@/src/components/ProductCard";
 import ProductNameSearch from "@/src/components/ProductNameSearch";
+import { useFlatListScroll } from "@/src/hooks/useFlatListScroll";
+import { useProductData } from "@/src/hooks/useProductData";
+import { useProductFetch } from "@/src/hooks/useProductFetch";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
+
+const SEARCH_CARD_OFFSET = 1; // Account for search card at index 0
 
 export default function ProductQuery() {
   const [capturedBarcode, setCapturedBarcode] = useState<string | null>(null);
-  const [productData, setProductData] = useState<any>(null);
+  const { width } = useWindowDimensions();
+  const CARD_WIDTH = width - 32;
 
-  // Effect to load example product when barcode is captured
-  useEffect(() => {
-    if (capturedBarcode) {
-      console.log("Loading example product for barcode:", capturedBarcode);
-      // Simulate API delay
-      setTimeout(() => {
-        setProductData(exampleProduct["Product Info"]);
-        console.log("Example product loaded:", exampleProduct["Product Info"]);
-      }, 500);
-    }
-  }, [capturedBarcode]);
+  // Custom hooks
+  const { products, addProduct, clearProducts, findProductByBarcode } =
+    useProductData();
+  const { flatListRef, scrollToIndex, resetScroll } = useFlatListScroll();
 
-  // // Effect to fetch product info when a barcode is captured
-  // useEffect(() => {
-  //   if (capturedBarcode) {
-  //     // Fetch product info when a barcode is captured
-  //     console.log("Fetching product info for barcode:", capturedBarcode);
-  //     getProductInfo(capturedBarcode)
-  //       .then((product) => {
-  //         console.log("Product Info:", product);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching product info:", error);
-  //       });
-  //   }
-  // }, [capturedBarcode]);
+  // Memoize the callback to prevent useEffect re-runs
+  const handleProductLoaded = useCallback(
+    (product: any) => {
+      const result = addProduct(product);
 
-  const handleBarcodeCapture = (barcode: string | null) => {
-    setCapturedBarcode(barcode);
-  };
+      if (result.isNew) {
+        console.log(
+          "Adding new product:",
+          product.product_name || product.product_name_en
+        );
+        // Scroll to new item after state update
+        setTimeout(() => scrollToIndex(result.index + SEARCH_CARD_OFFSET), 0);
+      } else {
+        console.log("Product already exists, scrolling to existing item");
+        scrollToIndex(result.index + SEARCH_CARD_OFFSET);
+      }
+
+      return result;
+    },
+    [addProduct, scrollToIndex]
+  );
+
+  // Handle barcode capture with validation
+  const handleBarcodeCapture = useCallback(
+    (barcode: string | null) => {
+      console.log("Barcode captured:", barcode);
+
+      // Only process valid barcodes
+      if (!barcode || barcode.trim() === "") return;
+
+      // Check if product already exists
+      const existingProduct = findProductByBarcode(barcode);
+      if (existingProduct.exists) {
+        console.log("Product already exists, scrolling to existing item");
+        scrollToIndex(existingProduct.index + SEARCH_CARD_OFFSET);
+        return;
+      }
+
+      // New barcode - proceed with fetch
+      setCapturedBarcode(barcode);
+    },
+    [findProductByBarcode, scrollToIndex]
+  );
+
+  // Fetch product when barcode changes (only called with valid barcodes)
+  const { isLoading, error } = useProductFetch(
+    capturedBarcode || "", // This ensures we pass a string, but empty string is handled in the hook
+    handleProductLoaded
+  );
+
+  // Clear data when navigating away from this screen
+  useFocusEffect(
+    useCallback(() => {
+      console.log("ProductQuery screen focused");
+
+      return () => {
+        console.log("ProductQuery screen unfocused - clearing data");
+        clearProducts();
+        setCapturedBarcode(null);
+        resetScroll();
+      };
+    }, [clearProducts, resetScroll])
+  );
+
+  // Prepare data for FlatList
+  const flatListData = [{ type: "search" }, ...products];
 
   return (
-    <View style={[styles.container]}>
+    <View style={styles.container}>
       <BarcodeScanner onBarcodeCapture={handleBarcodeCapture} />
 
-      <View style={{ height: 200, backgroundColor: "grey" }}>
-        <Text style={{ color: "white", textAlign: "center", paddingTop: 20 }}>
-          {capturedBarcode
-            ? `Captured Barcode: ${capturedBarcode}`
-            : "No barcode captured yet."}
-        </Text>
+      <FlatList
+        ref={flatListRef}
+        style={[styles.slider, { backgroundColor: "#27F2F5" }]}
+        data={flatListData}
+        keyExtractor={(item, index) =>
+          item.type === "search" ? "search" : item._id || index.toString()
+        }
+        horizontal
+        pagingEnabled
+        snapToAlignment="center"
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16 }}
+        ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
+        getItemLayout={(_, index) => ({
+          length: CARD_WIDTH + 8,
+          offset: (CARD_WIDTH + 8) * index,
+          index,
+        })}
+        renderItem={({ item }) => {
+          if (item.type === "search") {
+            return (
+              <View style={{ width: CARD_WIDTH }}>
+                <ProductNameSearch />
+              </View>
+            );
+          }
 
-        {productData && (
-          <Text style={{ color: "white", textAlign: "center", paddingTop: 10 }}>
-            Product: {productData.product_name}
-          </Text>
-        )}
+          return <ProductCard product={item} width={CARD_WIDTH} />;
+        }}
+      />
 
-        <Button
-          title="Clear"
-          onPress={() => {
-            setCapturedBarcode(null);
-            setProductData(null);
-          }}
-        />
-      </View>
-
-      <ProductNameSearch />
+      {/* Debug info - remove in production */}
+      {__DEV__ && (
+        <View style={styles.debugInfo}>
+          <Text>Products: {products.length}</Text>
+          <Text>Loading: {isLoading ? "Yes" : "No"}</Text>
+          <Text>Error: {error || "None"}</Text>
+          <Text>Barcode: {capturedBarcode || "None"}</Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: "100%",
+    flex: 1,
+    gap: 8,
+  },
+  slider: {
+    flexDirection: "row",
+    maxHeight: 200,
+  },
+  debugInfo: {
+    padding: 8,
+    backgroundColor: "#f0f0f0",
+    margin: 8,
+    borderRadius: 4,
   },
 });

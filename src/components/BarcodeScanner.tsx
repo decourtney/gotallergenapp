@@ -43,7 +43,12 @@ export default function BarcodeScanner({
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          { flex: 1, justifyContent: "center", height: "100%" },
+        ]}
+      >
         <Text style={styles.message}>
           We need your permission to use the camera
         </Text>
@@ -82,46 +87,52 @@ export default function BarcodeScanner({
   };
 
   return (
-    <TouchableWithoutFeedback
-      style={[styles.container]}
-      onPress={handleManualScan}
-    >
-      <CameraView
-        style={[styles.camera]}
-        facing={facing}
-        flash={flashMode}
-        onBarcodeScanned={onBarCodeScanned}
+    <View style={[styles.container]}>
+      <TouchableWithoutFeedback
+        style={[styles.container]}
+        onPress={handleManualScan}
       >
+        <CameraView
+          style={[styles.camera]}
+          facing={facing}
+          flash={flashMode}
+          onBarcodeScanned={onBarCodeScanned}
+        ></CameraView>
+      </TouchableWithoutFeedback>
+
+      <View style={[styles.cameraUI]}>
         <View
           style={{ height: insets.top, backgroundColor: "rgba(0,0,0,0.2)" }}
         ></View>
-        <View style={{ flex: 1 }}>
+
+        <View style={[{ flex: 1, position: "relative" }]}>
           {/* Top Left Corner */}
-          <View style={[styles.cornerFrame, styles.topLeft]} />
-
+          <View style={[styles.frameCorner, styles.topLeft, styles.noClick]} />
           {/* Top Right Corner */}
-          <View style={[styles.cornerFrame, styles.topRight]} />
-
+          <View style={[styles.frameCorner, styles.topRight, styles.noClick]} />
           {/* Bottom Left Corner */}
-          <View style={[styles.cornerFrame, styles.bottomLeft]} />
-
+          <View
+            style={[styles.frameCorner, styles.bottomLeft, styles.noClick]}
+          />
           {/* Bottom Right Corner */}
-          <View style={[styles.cornerFrame, styles.bottomRight]} />
+          <View
+            style={[styles.frameCorner, styles.bottomRight, styles.noClick]}
+          />
 
-          <View style={[styles.icon, styles.searchIcon]}>
+          <View style={[styles.button, styles.searchButton, styles.noClick]}>
             <IconSymbol size={28} name="search-sharp" color="white" />
           </View>
 
+          {/* Camera buttons */}
           <TouchableHighlight
-            style={[styles.icon, styles.reverseIcon]}
+            style={[styles.button, styles.reverseButton]}
             underlayColor={"rgba(255, 255, 255, 0.2)"}
             onPress={() => setFacing(facing === "back" ? "front" : "back")}
           >
             <IconSymbol size={28} name="camera-reverse-sharp" color="white" />
           </TouchableHighlight>
-
           <TouchableHighlight
-            style={[styles.icon, styles.flashIcon]}
+            style={[styles.button, styles.flashButton]}
             underlayColor={"rgba(255, 255, 255, 0.2)"}
             onPress={() => setFlashMode(flashMode === "off" ? "on" : "off")}
           >
@@ -132,47 +143,59 @@ export default function BarcodeScanner({
             )}
           </TouchableHighlight>
         </View>
-      </CameraView>
-    </TouchableWithoutFeedback>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  message: {
-    textAlign: "center",
-    paddingBottom: 10,
-  },
-  camera: {
-    height: "35%",
+    position: "relative",
+    maxHeight: "35%",
+    minHeight: "35%",
   },
   text: {
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
   },
-  icon: {
+  noClick: {
+    pointerEvents: "none",
+  },
+  message: {
+    textAlign: "center",
+    paddingBottom: 10,
+  },
+  camera: {
+    height: "100%",
+  },
+  cameraUI: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+  },
+  button: {
     position: "absolute",
     padding: 10,
     opacity: 1,
     borderRadius: "100%",
   },
-  searchIcon: {
+  searchButton: {
     top: "50%",
     left: "50%",
     transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
   },
-  reverseIcon: {
+  reverseButton: {
     bottom: 10,
     left: 10,
   },
-  flashIcon: {
+  flashButton: {
     bottom: 10,
     right: 10,
   },
-  cornerFrame: {
+  frameCorner: {
     position: "absolute",
     width: 20,
     height: 20,

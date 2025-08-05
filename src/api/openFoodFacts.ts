@@ -10,7 +10,7 @@ const api = axios.create({
 });
 
 // Get product info by barcode
-export const getProductInfo = async (barcode: string) => {
+export const getProductInfoByBarcode = async (barcode: string) => {
   try {
     const response = await api.get(`/product/${barcode}.json`);
 
