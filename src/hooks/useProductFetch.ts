@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
 import exampleProduct from "@/exampleProduct.json";
-import { getProductInfoByBarcode } from "../api/openFoodFacts";
-// import { getProductInfo } from "@/src/api/openFoodFacts";
+import { useEffect, useState } from "react";
+//import { getProductInfoByBarcode } from "@/src/api/openFoodFacts";
 
 export const useProductFetch = (
   barcode: string,

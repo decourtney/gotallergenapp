@@ -1,50 +1,209 @@
-# Welcome to your Expo app 👋
+# Native Food Nutrition Scanner 🥫📱
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native app built with Expo that allows users to scan food product barcodes and retrieve detailed nutritional information using the OpenFoodFacts API.
 
-## Get started
+## Features ✨
 
-1. Install dependencies
+- **Barcode Scanning**: Real-time barcode scanning using device camera
+- **Nutritional Information**: Detailed nutrition facts, ingredients, and allergen information
+- **Product Search**: Search for products by name or barcode
+- **Query History**: View previously searched products
+- **Cross-Platform**: Runs on iOS, Android, and web
+- **Dark Mode Support**: Automatic theme switching based on system preferences
 
+## Screenshots 📸
+
+*Coming soon*
+
+## Tech Stack 🛠️
+
+- **Framework**: React Native with Expo SDK ~53.0.16
+- **Language**: TypeScript
+- **Navigation**: Expo Router (file-based routing)
+- **Camera**: Expo Camera for barcode scanning
+- **API**: OpenFoodFacts for product data
+- **State Management**: React hooks and context
+- **Styling**: React Native StyleSheet with theme support
+
+## Supported Barcode Formats 📊
+
+The app specifically targets food-related barcode formats:
+- EAN13
+- EAN8  
+- UPC-A
+- UPC-E
+
+## Getting Started 🚀
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- Expo CLI
+- Android Studio (for Android development) or Xcode (for iOS development)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd native-food-nutrition-scanner
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. **Start the development server**
    ```bash
-   npx expo start
+   npm start
+   # or
+   expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. **Run on your preferred platform**
+   ```bash
+   npm run android    # Android emulator/device
+   npm run ios        # iOS simulator/device  
+   npm run web        # Web browser
+   ```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Development Commands
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start Expo development server |
+| `npm run dev` | Start with dev client |
+| `npm run android` | Run on Android |
+| `npm run ios` | Run on iOS |
+| `npm run web` | Run in web browser |
+| `npm run lint` | Run ESLint |
+| `npm run clean` | Clean build artifacts |
+| `npm run reset-project` | Reset to blank project |
 
-## Get a fresh project
+## Project Structure 📁
 
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+native-food-nutrition-scanner/
+├── app/                          # Expo Router screens
+│   ├── (tabs)/                   # Tab navigation screens
+│   │   ├── index.tsx            # Home screen
+│   │   ├── productQuery.tsx     # Product search screen
+│   │   └── previousQueries.tsx  # Query history screen
+│   ├── _layout.tsx              # Root layout
+│   └── +not-found.tsx           # 404 screen
+├── src/
+│   ├── api/                     # API integration
+│   │   └── openFoodFacts.ts     # OpenFoodFacts API client
+│   ├── components/              # Reusable components
+│   │   ├── BarcodeScanner.tsx   # Camera barcode scanner
+│   │   ├── ProductCard.tsx      # Product information display
+│   │   ├── SearchBar.tsx        # Search input component
+│   │   └── ui/                  # UI components
+│   ├── hooks/                   # Custom React hooks
+│   │   ├── useProductFetch.ts   # Product fetching logic
+│   │   ├── useProductData.ts    # Product state management
+│   │   └── useFlatListScroll.ts # List scrolling utilities
+│   └── constants/               # App constants
+│       └── Colors.ts            # Theme colors
+├── assets/                      # Static assets
+│   ├── images/                  # App icons and images
+│   └── fonts/                   # Custom fonts
+└── android/                     # Android-specific files
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Key Features Implementation 🔧
 
-## Learn more
+### Barcode Scanning
+- Uses `expo-camera` for real-time barcode detection
+- Filters for food-specific barcode formats
+- Manual confirmation workflow for scanned codes
 
-To learn more about developing your project with Expo, look at the following resources:
+### Product Information
+- Integrates with OpenFoodFacts API for comprehensive product data
+- Displays nutrition facts, ingredients, allergens, and product images
+- Handles missing data gracefully with fallback UI
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Navigation
+- File-based routing with Expo Router
+- Three-tab interface: Home, Product Query, Previous Queries
+- Platform-specific styling for iOS and Android
 
-## Join the community
+### Theme Support
+- Automatic dark/light mode detection
+- Custom color schemes with platform-specific adaptations
+- Consistent theming across all components
 
-Join our community of developers creating universal apps.
+## API Integration 🌐
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The app uses the [OpenFoodFacts API](https://world.openfoodfacts.org/data) to fetch product information:
+
+- **Base URL**: `https://world.openfoodfacts.org/api/v0/`
+- **Product Endpoint**: `/product/{barcode}.json`
+- **Search Endpoint**: `/cgi/search.pl`
+
+## Permissions 📋
+
+### Required Permissions
+- **Camera**: For barcode scanning functionality
+- **Internet**: For API requests to fetch product data
+
+Camera permission is requested when first accessing the scanner screen.
+
+## Contributing 🤝
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow TypeScript best practices
+- Use existing component patterns and styling conventions
+- Add proper error handling for API calls
+- Test on both iOS and Android platforms
+- Run `npm run lint` before committing
+
+## Troubleshooting 🔧
+
+### Common Issues
+
+**Camera not working on device:**
+- Ensure camera permissions are granted
+- Check that the device has a working camera
+- Restart the Expo development server
+
+**API requests failing:**
+- Verify internet connection
+- Check OpenFoodFacts API status
+- Review network security settings on device
+
+**Build errors:**
+- Run `npm run clean` to clear build artifacts
+- Delete `node_modules` and run `npm install`
+- Check Expo CLI version compatibility
+
+## License 📄
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments 🙏
+
+- [OpenFoodFacts](https://world.openfoodfacts.org/) for providing free access to product data
+- [Expo](https://expo.dev/) for the excellent development platform
+- React Native community for comprehensive documentation and support
+
+## Roadmap 🗺️
+
+- [ ] Offline support for scanned products
+- [ ] Custom nutrition goals and tracking
+- [ ] Product comparison features  
+- [ ] Barcode history export
+- [ ] Multi-language support
+- [ ] Voice search functionality
+
+---
+
+**Built with ❤️ using React Native and Expo**
