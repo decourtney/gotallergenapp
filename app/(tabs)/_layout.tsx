@@ -28,7 +28,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="profile"
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
@@ -37,19 +37,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="productQuery"
+        name="index"
         options={{
           title: "Scan",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="search-circle-sharp" color={color} />
           ),
-          
         }}
       />
+
       <Tabs.Screen
-        name="previousQueries"
+        name="history"
         options={{
-          title: "Lists",
+          title: "History",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="list-circle-sharp" color={color} />
           ),
