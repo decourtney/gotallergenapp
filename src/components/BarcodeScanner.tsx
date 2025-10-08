@@ -1,11 +1,14 @@
 import { IconSymbol } from "@/src/components/ui/IconSymbol";
+import { ScannerMode } from "@/src/utils/storageUtils";
+import { useIsFocused } from "@react-navigation/native";
 import {
   BarcodeScanningResult,
   CameraType,
   CameraView,
   useCameraPermissions,
 } from "expo-camera";
-import { useRef, useState } from "react";
+import * as Haptics from "expo-haptics";
+import { useEffect, useRef, useState } from "react";
 import {
   Button,
   StyleSheet,
@@ -18,22 +21,33 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface BarcodeScannerProps {
   onBarcodeCapture?: (barcode: string | null) => void;
+  mode?: ScannerMode;
 }
 
 export default function BarcodeScanner({
   onBarcodeCapture,
+  mode = "manual",
 }: BarcodeScannerProps) {
   const insets = useSafeAreaInsets();
   const [facing, setFacing] = useState<CameraType>("back");
-  const [flashMode, setFlashMode] = useState<"off" | "on">("off");
+  const [isTorch, setIsTorch] = useState<boolean>(false);
   const [permission, requestPermission] = useCameraPermissions();
   const pendingDataRef = useRef<string | null>(null);
+  const lastScannedRef = useRef<string | null>(null);
+  const isFocused = useIsFocused();
   const FOOD_BARCODE_TYPES = [
     "ean13", // Europe, global
     "ean8", // Smaller retail products
     "upc_a", // US retail
     "upc_e", // Compressed version of UPC-A
   ];
+
+  useEffect(() => {
+    if (!isFocused) {
+      pendingDataRef.current = null;
+      lastScannedRef.current = null;
+    }
+  }, [isFocused]);
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -64,41 +78,50 @@ export default function BarcodeScanner({
       return;
     }
 
-    // If the scanned data is different from the pending data, update it
-    if (scanned.data !== pendingDataRef.current && onBarcodeCapture) {
-      console.log("Barcode scanned:", scanned.data);
-      pendingDataRef.current = scanned.data;
-      onBarcodeCapture(scanned.data);
+    // Store the last scanned barcode for manual mode
+    lastScannedRef.current = scanned.data;
+
+    // In auto mode, capture immediately
+    if (mode === "auto") {
+      if (scanned.data !== pendingDataRef.current && onBarcodeCapture) {
+        console.log("Barcode auto-scanned:", scanned.data);
+        pendingDataRef.current = scanned.data;
+        onBarcodeCapture(scanned.data);
+      }
     }
   };
 
   const handleManualScan = () => {
-    // // Clear the pending data and notify the parent component
-    // pendingDataRef.current = null;
-    // if (onBarcodeCapture) {
-    //   onBarcodeCapture(null); // Clear the captured barcode
-    // }
-
-    // Simulate a manual scan for demonstration purposes
-    // Example UPC-A barcode 037466039411
-    if (onBarcodeCapture) {
-      onBarcodeCapture("037466039411"); // Simulate a manual scan
+    if (mode === "manual" && lastScannedRef.current) {
+      // Only capture if we have a barcode and it's different from the last one captured
+      if (
+        lastScannedRef.current !== pendingDataRef.current &&
+        onBarcodeCapture
+      ) {
+        console.log("Barcode manually captured:", lastScannedRef.current);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        pendingDataRef.current = lastScannedRef.current;
+        onBarcodeCapture(lastScannedRef.current);
+      }
     }
   };
 
   return (
     <View style={[styles.container]}>
-      <TouchableWithoutFeedback
-        style={[styles.container]}
-        onPress={handleManualScan}
-      >
-        <CameraView
-          style={[styles.camera]}
-          facing={facing}
-          flash={flashMode}
-          onBarcodeScanned={onBarCodeScanned}
-        ></CameraView>
-      </TouchableWithoutFeedback>
+      {isFocused && (
+        <TouchableWithoutFeedback
+          style={[styles.container]}
+          onPress={handleManualScan}
+        >
+          <CameraView
+            key={facing} // also remount when switching camera type
+            style={[styles.camera]}
+            facing={facing}
+            enableTorch={isTorch}
+            onBarcodeScanned={onBarCodeScanned}
+          />
+        </TouchableWithoutFeedback>
+      )}
 
       <View style={[styles.cameraUI]}>
         <View
@@ -106,6 +129,12 @@ export default function BarcodeScanner({
         ></View>
 
         <View style={[{ flex: 1, position: "relative" }]}>
+          {/* Manual Mode Indicator */}
+          {mode === "manual" && (
+            <View style={styles.manualModeIndicator}>
+              <Text style={styles.manualModeText}>Tap to scan</Text>
+            </View>
+          )}
           {/* Top Left Corner */}
           <View style={[styles.frameCorner, styles.topLeft, styles.noClick]} />
           {/* Top Right Corner */}
@@ -134,9 +163,9 @@ export default function BarcodeScanner({
           <TouchableHighlight
             style={[styles.button, styles.flashButton]}
             underlayColor={"rgba(255, 255, 255, 0.2)"}
-            onPress={() => setFlashMode(flashMode === "off" ? "on" : "off")}
+            onPress={() => setIsTorch(isTorch === false ? true : false)}
           >
-            {flashMode === "off" ? (
+            {isTorch === false ? (
               <IconSymbol size={28} name="flash-sharp" color="white" />
             ) : (
               <IconSymbol size={28} name="flash-off-sharp" color="white" />
@@ -235,5 +264,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  manualModeIndicator: {
+    position: "absolute",
+    top: 20,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 10,
+  },
+  manualModeText: {
+    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 13,
+    fontWeight: "500",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
 });

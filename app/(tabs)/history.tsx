@@ -1,20 +1,21 @@
-import { useNavigation, useRouter, useFocusEffect } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  Alert,
-} from "react-native";
-import Swipeable from "react-native-gesture-handler/Swipeable";
-import {
-  getSearchHistory,
   clearSearchHistory,
+  deleteHistoryItem,
+  getSearchHistory,
   SearchHistoryItem,
 } from "@/src/utils/storageUtils";
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Swipeable from "react-native-gesture-handler/Swipeable";
 
 export default function History() {
   const navigation = useNavigation();
@@ -24,7 +25,7 @@ export default function History() {
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      headerTitle: "Previously Viewed",
+      headerTitle: "Search History",
     });
   }, [navigation]);
 
@@ -61,8 +62,7 @@ export default function History() {
   const handleDeleteItem = async (itemId: string) => {
     const updatedHistory = history.filter((item) => item.id !== itemId);
     setHistory(updatedHistory);
-    // Note: You'll need to add a deleteHistoryItem function to storageUtils
-    // For now, this just updates local state
+    deleteHistoryItem(itemId);
   };
 
   const handleItemPress = (item: SearchHistoryItem) => {

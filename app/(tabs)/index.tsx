@@ -1,14 +1,16 @@
-import BarcodeScanner from "@/src/components/BarcodeScanner";
 import { AllergenResults } from "@/src/components/AllergenResults";
+import BarcodeScanner from "@/src/components/BarcodeScanner";
 import SearchBar from "@/src/components/SearchBar";
 import { matchAllergens } from "@/src/utils/allergenMatcher";
 import {
-  getAllergenPreferences,
-  AllergenPreferences,
   addToSearchHistory,
+  AllergenPreferences,
+  getAllergenPreferences,
+  getScannerMode,
+  ScannerMode,
 } from "@/src/utils/storageUtils";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function Scanner() {
@@ -18,14 +20,17 @@ export default function Scanner() {
   const [product, setProduct] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scannerMode, setScannerMode] = useState<ScannerMode>("manual");
   const [userPreferences, setUserPreferences] = useState<AllergenPreferences>(
     {}
   );
+  const lastSavedProductRef = useRef<string | null>(null);
 
-  // Load user preferences on mount
-  useEffect(() => {
-    loadUserPreferences();
-  }, []);
+  // // Load user preferences on mount
+  // useEffect(() => {
+  //   loadUserPreferences();
+  //   setProduct(null);
+  // }, []);
 
   // Handle barcode from navigation params (from history)
   useEffect(() => {
@@ -41,6 +46,8 @@ export default function Scanner() {
   const loadUserPreferences = async () => {
     const prefs = await getAllergenPreferences();
     setUserPreferences(prefs);
+    const mode = await getScannerMode();
+    setScannerMode(mode);
   };
 
   // Reload preferences when screen is focused (in case user changed them)
@@ -55,14 +62,6 @@ export default function Scanner() {
     if (!scannedBarcode || scannedBarcode.trim() === "") return;
     setBarcode(scannedBarcode);
     setSearchTerm(null); // Clear search if scanning
-  }, []);
-
-  // Handle search - clear barcode when searching
-  const handleSearch = useCallback((term: string | null) => {
-    setSearchTerm(term);
-    if (term) {
-      setBarcode(null); // Clear barcode if searching
-    }
   }, []);
 
   // Fetch product when barcode or search term changes
@@ -126,16 +125,25 @@ export default function Scanner() {
   useEffect(() => {
     const saveToHistory = async () => {
       if (product && allergenMatch) {
-        const productName =
-          product.product_name || product.product_name_en || "Unknown Product";
-        const productImage = product.image_url || product.image_front_url;
+        const productCode = product.code || product._id;
 
-        await addToSearchHistory({
-          productName,
-          barcode: product.code,
-          allergens: allergenMatch.detectedAllergens,
-          imageUrl: productImage,
-        });
+        // Only save if this is a different product than we last saved
+        if (productCode && productCode !== lastSavedProductRef.current) {
+          const productName =
+            product.product_name ||
+            product.product_name_en ||
+            "Unknown Product";
+          const productImage = product.image_url || product.image_front_url;
+
+          await addToSearchHistory({
+            productName,
+            barcode: product.code,
+            allergens: allergenMatch.detectedAllergens,
+            imageUrl: productImage,
+          });
+
+          lastSavedProductRef.current = productCode;
+        }
       }
     };
 
@@ -145,7 +153,10 @@ export default function Scanner() {
   return (
     <View style={styles.container}>
       {/* Camera */}
-      <BarcodeScanner onBarcodeCapture={handleBarcodeCapture} />
+      <BarcodeScanner
+        onBarcodeCapture={handleBarcodeCapture}
+        mode={scannerMode}
+      />
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
