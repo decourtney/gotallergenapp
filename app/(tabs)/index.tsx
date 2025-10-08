@@ -1,142 +1,169 @@
 import BarcodeScanner from "@/src/components/BarcodeScanner";
-import { ProductCard } from "@/src/components/ProductCard";
-import ProductNameSearch from "@/src/components/ProductNameSearch";
-import { useFlatListScroll } from "@/src/hooks/useFlatListScroll";
-import { useProductData } from "@/src/hooks/useProductData";
-import { useProductFetch } from "@/src/hooks/useProductFetch";
-import { useFocusEffect } from "expo-router";
-import React, { useCallback, useState } from "react";
+import { AllergenResults } from "@/src/components/AllergenResults";
+import SearchBar from "@/src/components/SearchBar";
+import { matchAllergens } from "@/src/utils/allergenMatcher";
 import {
-  FlatList,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+  getAllergenPreferences,
+  AllergenPreferences,
+  addToSearchHistory,
+} from "@/src/utils/storageUtils";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
-const SEARCH_CARD_OFFSET = 1; // Account for search card at index 0
-
-export default function ProductQuery() {
-  const [capturedBarcode, setCapturedBarcode] = useState<string | null>(null);
-  const { width } = useWindowDimensions();
-  const CARD_WIDTH = width - 32;
-
-  // Custom hooks
-  const { products, addProduct, clearProducts, findProductByBarcode } =
-    useProductData();
-  const { flatListRef, scrollToIndex, resetScroll } = useFlatListScroll();
-
-  // Memoize the callback to prevent useEffect re-runs
-  const handleProductLoaded = useCallback(
-    (product: any) => {
-      const result = addProduct(product);
-
-      if (result.isNew) {
-        console.log(
-          "Adding new product:",
-          product.product_name || product.product_name_en
-        );
-        // Scroll to new item after state update
-        setTimeout(() => scrollToIndex(result.index + SEARCH_CARD_OFFSET), 0);
-      } else {
-        console.log("Product already exists, scrolling to existing item");
-        scrollToIndex(result.index + SEARCH_CARD_OFFSET);
-      }
-
-      return result;
-    },
-    [addProduct, scrollToIndex]
+export default function Scanner() {
+  const params = useLocalSearchParams();
+  const [barcode, setBarcode] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string | null>(null);
+  const [product, setProduct] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [userPreferences, setUserPreferences] = useState<AllergenPreferences>(
+    {}
   );
 
-  // Handle barcode capture with validation
-  const handleBarcodeCapture = useCallback(
-    (barcode: string | null) => {
-      console.log("Barcode captured:", barcode);
+  // Load user preferences on mount
+  useEffect(() => {
+    loadUserPreferences();
+  }, []);
 
-      // Only process valid barcodes
-      if (!barcode || barcode.trim() === "") return;
+  // Handle barcode from navigation params (from history)
+  useEffect(() => {
+    if (params.barcode && typeof params.barcode === "string") {
+      setBarcode(params.barcode);
+      setSearchTerm(null);
+    } else if (params.productName && typeof params.productName === "string") {
+      setSearchTerm(params.productName);
+      setBarcode(null);
+    }
+  }, [params.barcode, params.productName]);
 
-      // Check if product already exists
-      const existingProduct = findProductByBarcode(barcode);
-      if (existingProduct.exists) {
-        console.log("Product already exists, scrolling to existing item");
-        scrollToIndex(existingProduct.index + SEARCH_CARD_OFFSET);
-        return;
-      }
+  const loadUserPreferences = async () => {
+    const prefs = await getAllergenPreferences();
+    setUserPreferences(prefs);
+  };
 
-      // New barcode - proceed with fetch
-      setCapturedBarcode(barcode);
-    },
-    [findProductByBarcode, scrollToIndex]
-  );
-
-  // Fetch product when barcode changes (only called with valid barcodes)
-  const { isLoading, error } = useProductFetch(
-    capturedBarcode || "", // This ensures we pass a string, but empty string is handled in the hook
-    handleProductLoaded
-  );
-
-  // Clear data when navigating away from this screen
+  // Reload preferences when screen is focused (in case user changed them)
   useFocusEffect(
     useCallback(() => {
-      console.log("ProductQuery screen focused");
-
-      return () => {
-        console.log("ProductQuery screen unfocused - clearing data");
-        clearProducts();
-        setCapturedBarcode(null);
-        resetScroll();
-      };
-    }, [clearProducts, resetScroll])
+      loadUserPreferences();
+    }, [])
   );
 
-  // Prepare data for FlatList
-  const flatListData = [{ type: "search" }, ...products];
+  // Handle barcode scan
+  const handleBarcodeCapture = useCallback((scannedBarcode: string | null) => {
+    if (!scannedBarcode || scannedBarcode.trim() === "") return;
+    setBarcode(scannedBarcode);
+    setSearchTerm(null); // Clear search if scanning
+  }, []);
+
+  // Handle search - clear barcode when searching
+  const handleSearch = useCallback((term: string | null) => {
+    setSearchTerm(term);
+    if (term) {
+      setBarcode(null); // Clear barcode if searching
+    }
+  }, []);
+
+  // Fetch product when barcode or search term changes
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const query = barcode || searchTerm;
+      if (!query) return;
+
+      setIsLoading(true);
+      setError(null);
+      setProduct(null);
+
+      try {
+        let url: string;
+
+        if (barcode) {
+          // Fetch by barcode
+          url = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`;
+        } else {
+          // Search by product name
+          url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(
+            searchTerm!
+          )}&page_size=1&json=true`;
+        }
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (barcode) {
+          // Barcode lookup response
+          if (data.status === 1 && data.product) {
+            setProduct(data.product);
+          } else {
+            setError("Product not found. Please try another barcode.");
+          }
+        } else {
+          // Search response
+          if (data.products && data.products.length > 0) {
+            setProduct(data.products[0]);
+          } else {
+            setError("No products found. Try a different search term.");
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        setError("Failed to fetch product. Please check your connection.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [barcode, searchTerm]);
+
+  // Match allergens when product or preferences change
+  const allergenMatch = product
+    ? matchAllergens(product.allergens_tags, userPreferences)
+    : null;
+
+  // Save to history when product is successfully loaded
+  useEffect(() => {
+    const saveToHistory = async () => {
+      if (product && allergenMatch) {
+        const productName =
+          product.product_name || product.product_name_en || "Unknown Product";
+        const productImage = product.image_url || product.image_front_url;
+
+        await addToSearchHistory({
+          productName,
+          barcode: product.code,
+          allergens: allergenMatch.detectedAllergens,
+          imageUrl: productImage,
+        });
+      }
+    };
+
+    saveToHistory();
+  }, [product, allergenMatch]);
 
   return (
     <View style={styles.container}>
+      {/* Camera */}
       <BarcodeScanner onBarcodeCapture={handleBarcodeCapture} />
 
-      <FlatList
-        ref={flatListRef}
-        style={[styles.slider, { backgroundColor: "#27F2F5" }]}
-        data={flatListData}
-        keyExtractor={(item, index) =>
-          item.type === "search" ? "search" : item._id || index.toString()
-        }
-        horizontal
-        pagingEnabled
-        snapToAlignment="center"
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-        ItemSeparatorComponent={() => <View style={{ width: 8 }} />}
-        getItemLayout={(_, index) => ({
-          length: CARD_WIDTH + 8,
-          offset: (CARD_WIDTH + 8) * index,
-          index,
-        })}
-        renderItem={({ item }) => {
-          if (item.type === "search") {
-            return (
-              <View style={{ width: CARD_WIDTH }}>
-                <ProductNameSearch />
-              </View>
-            );
-          }
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <SearchBar
+          setSearchTerm={setSearchTerm}
+          placeholder="Search for a product..."
+        />
+      </View>
 
-          return <ProductCard product={item} width={CARD_WIDTH} />;
-        }}
-      />
-
-      {/* Debug info - remove in production */}
-      {__DEV__ && (
-        <View style={styles.debugInfo}>
-          <Text>Products: {products.length}</Text>
-          <Text>Loading: {isLoading ? "Yes" : "No"}</Text>
-          <Text>Error: {error || "None"}</Text>
-          <Text>Barcode: {capturedBarcode || "None"}</Text>
-        </View>
-      )}
+      {/* Results */}
+      <View style={styles.resultsContainer}>
+        <AllergenResults
+          product={product}
+          allergenMatch={allergenMatch}
+          isLoading={isLoading}
+          error={error}
+        />
+      </View>
     </View>
   );
 }
@@ -144,16 +171,15 @@ export default function ProductQuery() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    gap: 8,
+    backgroundColor: "#fff",
   },
-  slider: {
-    flexDirection: "row",
-    maxHeight: 200,
+  searchContainer: {
+    padding: 16,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
   },
-  debugInfo: {
-    padding: 8,
-    backgroundColor: "#f0f0f0",
-    margin: 8,
-    borderRadius: 4,
+  resultsContainer: {
+    flex: 1,
   },
 });

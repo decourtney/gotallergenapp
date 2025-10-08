@@ -96,3 +96,16 @@ export const clearSearchHistory = async (): Promise<void> => {
     console.error("Error clearing search history:", error);
   }
 };
+
+export const deleteHistoryItem = async (itemId: string): Promise<void> => {
+  try {
+    const history = await getSearchHistory();
+    const updatedHistory = history.filter((item) => item.id !== itemId);
+    await AsyncStorage.setItem(
+      SEARCH_HISTORY_KEY,
+      JSON.stringify(updatedHistory)
+    );
+  } catch (error) {
+    console.error("Error deleting history item:", error);
+  }
+};
