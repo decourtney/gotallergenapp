@@ -166,9 +166,9 @@ export default function BarcodeScanner({
             onPress={() => setIsTorch(isTorch === false ? true : false)}
           >
             {isTorch === false ? (
-              <IconSymbol size={28} name="flash-off-sharp" color="white" />
-            ) : (
               <IconSymbol size={28} name="flash-sharp" color="white" />
+            ) : (
+              <IconSymbol size={28} name="flash-off-sharp" color="white" />
             )}
           </TouchableHighlight>
         </View>
