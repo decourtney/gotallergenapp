@@ -1,8 +1,11 @@
 import {
   AllergenPreferences,
   getAllergenPreferences,
+  getScannerMode,
   saveAllergenPreferences,
+  ScannerMode,
   setSetupComplete,
+  saveScannerMode
 } from "@/src/utils/storageUtils";
 import { useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
@@ -112,6 +115,7 @@ const ALLERGEN_CATEGORIES: { category: string; items: AllergenItem[] }[] = [
 export default function Profile() {
   const navigation = useNavigation();
   const [allergens, setAllergens] = useState<AllergenPreferences>({});
+  const [scannerMode, setScannerMode] = useState<ScannerMode>("manual");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
@@ -130,6 +134,8 @@ export default function Profile() {
   const loadPreferences = async () => {
     const prefs = await getAllergenPreferences();
     setAllergens(prefs);
+    const mode = await getScannerMode();
+    setScannerMode(mode);
   };
 
   const toggleCategory = (category: string) => {
@@ -184,6 +190,12 @@ export default function Profile() {
     return Object.values(allergens).filter((v) => v).length;
   };
 
+  const toggleScannerMode = async () => {
+    const newMode: ScannerMode = scannerMode === "manual" ? "auto" : "manual";
+    setScannerMode(newMode);
+    await saveScannerMode(newMode);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -191,6 +203,26 @@ export default function Profile() {
           Select the allergens you want to track
         </Text>
         <Text style={styles.selectedCount}>{getSelectedCount()} selected</Text>
+      </View>
+
+      {/* Scanner Mode Toggle */}
+      <View style={styles.scannerModeSection}>
+        <View style={styles.scannerModeHeader}>
+          <View style={styles.scannerModeInfo}>
+            <Text style={styles.scannerModeTitle}>Scanner Mode</Text>
+            <Text style={styles.scannerModeDescription}>
+              {scannerMode === "manual"
+                ? "Tap to capture barcode"
+                : "Automatically scan visible barcodes"}
+            </Text>
+          </View>
+          <Switch
+            value={scannerMode === "auto"}
+            onValueChange={toggleScannerMode}
+            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            thumbColor={scannerMode === "auto" ? "#2196F3" : "#f4f3f4"}
+          />
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -348,5 +380,30 @@ const styles = StyleSheet.create({
   nestedContainer: {
     paddingLeft: 32,
     backgroundColor: "#fafafa",
+  },
+  scannerModeSection: {
+    backgroundColor: "#f8f9fa",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  scannerModeHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+  },
+  scannerModeInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  scannerModeTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  scannerModeDescription: {
+    fontSize: 13,
+    color: "#666",
   },
 });

@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const ALLERGENS_KEY = "@allergen_preferences";
 const SETUP_COMPLETE_KEY = "@setup_complete";
 const SEARCH_HISTORY_KEY = "@search_history";
+const SCANNER_MODE_KEY = "@scanner_mode";
 
 export interface AllergenPreferences {
   [key: string]: boolean;
@@ -16,6 +17,8 @@ export interface SearchHistoryItem {
   allergens: string[];
   imageUrl?: string;
 }
+
+export type ScannerMode = "manual" | "auto";
 
 // Allergen Preferences
 export const saveAllergenPreferences = async (
@@ -55,6 +58,25 @@ export const isSetupComplete = async (): Promise<boolean> => {
   } catch (error) {
     console.error("Error loading setup status:", error);
     return false;
+  }
+};
+
+// Scanner Mode Preferences
+export const saveScannerMode = async (mode: ScannerMode): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(SCANNER_MODE_KEY, mode);
+  } catch (error) {
+    console.error("Error saving scanner mode:", error);
+  }
+};
+
+export const getScannerMode = async (): Promise<ScannerMode> => {
+  try {
+    const value = await AsyncStorage.getItem(SCANNER_MODE_KEY);
+    return (value as ScannerMode) || "manual"; // Default to manual
+  } catch (error) {
+    console.error("Error loading scanner mode:", error);
+    return "manual";
   }
 };
 
