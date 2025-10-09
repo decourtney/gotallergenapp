@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { COLORS } from "@/src/constants/theme";
 
 interface BarcodeScannerProps {
   onBarcodeCapture?: (barcode: string | null) => void;
@@ -66,7 +67,11 @@ export default function BarcodeScanner({
         <Text style={styles.message}>
           We need your permission to use the camera
         </Text>
-        <Button onPress={requestPermission} title="grant permission" />
+        <Button
+          onPress={requestPermission}
+          title="Grant Permission"
+          color={COLORS.primary}
+        />
       </View>
     );
   }
@@ -125,51 +130,63 @@ export default function BarcodeScanner({
 
       <View style={[styles.cameraUI]}>
         <View
-          style={{ height: insets.top, backgroundColor: "rgba(0,0,0,0.2)" }}
+          style={{ height: insets.top, backgroundColor: COLORS.overlay }}
         ></View>
 
         <View style={[{ flex: 1, position: "relative" }]}>
           {/* Manual Mode Indicator */}
           {mode === "manual" && (
             <View style={styles.manualModeIndicator}>
-              <Text style={styles.manualModeText}>Tap to scan</Text>
+              <Text style={styles.manualModeText}>👆 Tap to scan</Text>
             </View>
           )}
-          {/* Top Left Corner */}
+
+          {/* Frame Corners */}
           <View style={[styles.frameCorner, styles.topLeft, styles.noClick]} />
-          {/* Top Right Corner */}
           <View style={[styles.frameCorner, styles.topRight, styles.noClick]} />
-          {/* Bottom Left Corner */}
           <View
             style={[styles.frameCorner, styles.bottomLeft, styles.noClick]}
           />
-          {/* Bottom Right Corner */}
           <View
             style={[styles.frameCorner, styles.bottomRight, styles.noClick]}
           />
 
+          {/* Center Search Icon */}
           <View style={[styles.button, styles.searchButton, styles.noClick]}>
-            <IconSymbol size={28} name="search-sharp" color="white" />
+            <IconSymbol size={28} name="search-sharp" color={COLORS.white} />
           </View>
 
-          {/* Camera buttons */}
+          {/* Camera Control Buttons */}
           <TouchableHighlight
             style={[styles.button, styles.reverseButton]}
-            underlayColor={"rgba(255, 255, 255, 0.2)"}
+            underlayColor={COLORS.clear}
             onPress={() => setFacing(facing === "back" ? "front" : "back")}
           >
-            <IconSymbol size={28} name="camera-reverse-sharp" color="white" />
+            <View style={styles.controlButtonInner}>
+              <IconSymbol
+                size={24}
+                name="camera-reverse-sharp"
+                color={COLORS.white}
+              />
+            </View>
           </TouchableHighlight>
+
           <TouchableHighlight
             style={[styles.button, styles.flashButton]}
-            underlayColor={"rgba(255, 255, 255, 0.2)"}
+            underlayColor={COLORS.clear}
             onPress={() => setIsTorch(isTorch === false ? true : false)}
           >
-            {isTorch === false ? (
-              <IconSymbol size={28} name="flash-sharp" color="white" />
-            ) : (
-              <IconSymbol size={28} name="flash-off-sharp" color="white" />
-            )}
+            <View style={styles.controlButtonInner}>
+              {isTorch === false ? (
+                <IconSymbol size={24} name="flash-sharp" color={COLORS.white} />
+              ) : (
+                <IconSymbol
+                  size={24}
+                  name="flash-off-sharp"
+                  color={COLORS.white}
+                />
+              )}
+            </View>
           </TouchableHighlight>
         </View>
       </View>
@@ -183,17 +200,15 @@ const styles = StyleSheet.create({
     maxHeight: "35%",
     minHeight: "35%",
   },
-  text: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
+  message: {
+    textAlign: "center",
+    paddingBottom: 16,
+    fontSize: 16,
+    color: "#333",
+    paddingHorizontal: 32,
   },
   noClick: {
     pointerEvents: "none",
-  },
-  message: {
-    textAlign: "center",
-    paddingBottom: 10,
   },
   camera: {
     height: "100%",
@@ -207,79 +222,83 @@ const styles = StyleSheet.create({
   },
   button: {
     position: "absolute",
-    padding: 10,
     opacity: 1,
-    borderRadius: "100%",
+  },
+  controlButtonInner: {
+    padding: 12,
   },
   searchButton: {
     top: "50%",
     left: "50%",
     transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
+    padding: 16,
+
   },
   reverseButton: {
-    bottom: 10,
-    left: 10,
+    bottom: 16,
+    left: 16,
   },
   flashButton: {
-    bottom: 10,
-    right: 10,
+    bottom: 16,
+    right: 16,
   },
   frameCorner: {
     position: "absolute",
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
     opacity: 1,
-    borderColor: "white", // or use Colors.light.tint for theme consistency
-    borderWidth: 2,
+    borderColor: COLORS.primary,
+    borderWidth: 3,
   },
   topLeft: {
-    top: 10,
-    left: 10,
+    top: 16,
+    left: 16,
     borderRightWidth: 0,
     borderBottomWidth: 0,
     borderTopLeftRadius: 12,
   },
   topRight: {
-    top: 10,
-    right: 10,
+    top: 16,
+    right: 16,
     borderLeftWidth: 0,
     borderBottomWidth: 0,
     borderTopRightRadius: 12,
   },
   bottomLeft: {
-    bottom: 10,
-    left: 10,
+    bottom: 16,
+    left: 16,
     borderRightWidth: 0,
     borderTopWidth: 0,
     borderBottomLeftRadius: 12,
   },
   bottomRight: {
-    bottom: 10,
-    right: 10,
+    bottom: 16,
+    right: 16,
     borderLeftWidth: 0,
     borderTopWidth: 0,
     borderBottomRightRadius: 12,
   },
-  scanButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
   manualModeIndicator: {
     position: "absolute",
-    top: 20,
+    top: 24,
     left: 0,
     right: 0,
     alignItems: "center",
     zIndex: 10,
   },
   manualModeText: {
-    color: "rgba(255, 255, 255, 0.9)",
-    fontSize: 13,
-    fontWeight: "500",
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: "600",
+    // backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    overflow: "hidden",
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.25,
+    // shadowRadius: 4,
+    // elevation: 1,
   },
 });

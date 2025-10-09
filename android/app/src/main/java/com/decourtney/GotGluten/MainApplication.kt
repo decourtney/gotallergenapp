@@ -1,4 +1,4 @@
-package com.decourtney.nativefoodnutritionscanner
+package com.decourtney.GotGluten
 
 import android.app.Application
 import android.content.res.Configuration
