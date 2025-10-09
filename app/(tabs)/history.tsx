@@ -4,6 +4,7 @@ import {
   getSearchHistory,
   SearchHistoryItem,
 } from "@/src/utils/storageUtils";
+import { useTheme } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
@@ -21,6 +22,7 @@ export default function History() {
   const navigation = useNavigation();
   const router = useRouter();
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
+  const { dark } = useTheme();
 
   useEffect(() => {
     navigation.setOptions({
@@ -28,13 +30,17 @@ export default function History() {
       headerTitle: "Search History",
       headerRight: () => (
         <Image
-          source={require("@/assets/images/gotallergen_logo.png")}
+          source={
+            dark
+              ? require("@/assets/images/gotallergen_logo_dark.png")
+              : require("@/assets/images/gotallergen_logo_light.png")
+          }
           style={{ width: 128, height: 64, marginLeft: 0 }}
           contentFit="contain"
         />
       ),
     });
-  }, [navigation]);
+  }, [navigation, useTheme()]);
 
   // Load history when screen is focused
   useFocusEffect(

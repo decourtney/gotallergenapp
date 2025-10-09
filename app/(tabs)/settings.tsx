@@ -1,12 +1,14 @@
+import { COLORS } from "@/src/constants/theme";
 import {
   AllergenPreferences,
   getAllergenPreferences,
   getScannerMode,
   saveAllergenPreferences,
+  saveScannerMode,
   ScannerMode,
   setSetupComplete,
-  saveScannerMode,
 } from "@/src/utils/storageUtils";
+import { useTheme } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
@@ -18,7 +20,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { COLORS } from "@/src/constants/theme";
 
 interface AllergenItem {
   id: string;
@@ -114,7 +115,7 @@ const ALLERGEN_CATEGORIES: { category: string; items: AllergenItem[] }[] = [
   },
 ];
 
-export default function Profile() {
+export default function Settings() {
   const navigation = useNavigation();
   const [allergens, setAllergens] = useState<AllergenPreferences>({});
   const [scannerMode, setScannerMode] = useState<ScannerMode>("manual");
@@ -124,21 +125,27 @@ export default function Profile() {
   const [expandedParents, setExpandedParents] = useState<Set<string>>(
     new Set()
   );
+  const { dark } = useTheme(); // `dark` is a boolean
 
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      headerTitle: "My Preferences",
+      headerTitle: "Settings",
       headerRight: () => (
         <Image
-          source={require("@/assets/images/gotallergen_logo.png")}
+          source={
+            dark
+              ? require("@/assets/images/gotallergen_logo_dark.png")
+              : require("@/assets/images/gotallergen_logo_light.png")
+          }
           style={{ width: 128, height: 64, marginLeft: 0 }}
           contentFit="contain"
         />
       ),
     });
+
     loadPreferences();
-  }, [navigation]);
+  }, [navigation, useTheme()]);
 
   const loadPreferences = async () => {
     const prefs = await getAllergenPreferences();
@@ -214,6 +221,9 @@ export default function Profile() {
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{getSelectedCount()} selected</Text>
         </View>
+        <Text style={styles.attributionText}>
+          Data provided by OpenFoodFacts.org, licensed under ODbL
+        </Text>
       </View>
 
       {/* Scanner Mode Toggle */}
@@ -396,6 +406,7 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
     marginBottom: 12,
   },
+  attributionText: { fontSize: 12, color: COLORS.textLight, marginTop: 12 },
   badge: {
     backgroundColor: COLORS.primary,
     paddingHorizontal: 12,

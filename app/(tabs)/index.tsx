@@ -14,6 +14,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { COLORS } from "@/src/constants/theme";
 import { getProductInfoByBarcode, getProductInfoByName } from "@/src/api/openFoodFacts";
+import MyBannerAd from "@/src/components/BannerAd";
 
 export default function Scanner() {
   const params = useLocalSearchParams();
@@ -150,6 +151,8 @@ export default function Scanner() {
           error={error}
         />
       </View>
+
+      <MyBannerAd />
     </View>
   );
 }

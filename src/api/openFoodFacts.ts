@@ -12,6 +12,7 @@ const apiCall = async (endpoint: string) => {
       Authorization: "Basic " + btoa(`${AUTH_USER}:${AUTH_PASS}`),
     },
   });
+  console.log("Making an API call.")
 
   if (!response.ok) {
     if (response.status === 404) {
