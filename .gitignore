@@ -21,6 +21,7 @@ expo-env.d.ts
 /android/.cxx/
 /android/local.properties
 .gradle/
+credentials.json
 
 # Native iOS (if added later)
 /ios/Pods/
