@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Product } from "../hooks/useProductData";
 
 interface ProductCardProps {
@@ -7,7 +7,7 @@ interface ProductCardProps {
   width: number;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, width }) => (
+export const ProductCard = ({ product, width }: ProductCardProps) => (
   <View style={{ width }}>
     <View style={styles.productInfo}>
       <Text>

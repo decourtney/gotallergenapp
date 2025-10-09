@@ -1,4 +1,4 @@
-package com.decourtney.nativefoodnutritionscanner
+package com.decourtney.GotGluten
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

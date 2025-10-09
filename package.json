@@ -1,5 +1,5 @@
 {
-  "name": "native-food-nutrition-scanner",
+  "name": "gotgluten",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -20,6 +20,7 @@
     "@react-navigation/native": "^7.1.6",
     "axios": "^1.10.0",
     "expo": "~53.0.16",
+    "expo-ads-admob": "^13.0.0",
     "expo-blur": "~14.1.5",
     "expo-camera": "~16.1.10",
     "expo-constants": "~17.1.6",
@@ -37,7 +38,10 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
+    "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-google-mobile-ads": "^15.8.0",
+    "react-native-reanimated": "^4.1.2",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-web": "~0.20.0",

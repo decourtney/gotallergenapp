@@ -5,8 +5,9 @@ import {
   saveAllergenPreferences,
   ScannerMode,
   setSetupComplete,
-  saveScannerMode
+  saveScannerMode,
 } from "@/src/utils/storageUtils";
+import { Image } from "expo-image";
 import { useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -17,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { COLORS } from "@/src/constants/theme";
 
 interface AllergenItem {
   id: string;
@@ -127,6 +129,13 @@ export default function Profile() {
     navigation.setOptions({
       headerShown: true,
       headerTitle: "My Preferences",
+      headerRight: () => (
+        <Image
+          source={require("@/assets/images/gotallergen_logo.png")}
+          style={{ width: 128, height: 64, marginLeft: 0 }}
+          contentFit="contain"
+        />
+      ),
     });
     loadPreferences();
   }, [navigation]);
@@ -202,12 +211,17 @@ export default function Profile() {
         <Text style={styles.headerText}>
           Select the allergens you want to track
         </Text>
-        <Text style={styles.selectedCount}>{getSelectedCount()} selected</Text>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{getSelectedCount()} selected</Text>
+        </View>
       </View>
 
       {/* Scanner Mode Toggle */}
       <View style={styles.scannerModeSection}>
-        <View style={styles.scannerModeHeader}>
+        <View style={styles.scannerModeCard}>
+          <View style={styles.scannerModeIcon}>
+            <Text style={styles.iconText}>📷</Text>
+          </View>
           <View style={styles.scannerModeInfo}>
             <Text style={styles.scannerModeTitle}>Scanner Mode</Text>
             <Text style={styles.scannerModeDescription}>
@@ -219,87 +233,143 @@ export default function Profile() {
           <Switch
             value={scannerMode === "auto"}
             onValueChange={toggleScannerMode}
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor={scannerMode === "auto" ? "#2196F3" : "#f4f3f4"}
+            trackColor={{ false: COLORS.border, true: COLORS.secondaryLight }}
+            thumbColor={
+              scannerMode === "auto" ? COLORS.secondary : COLORS.white
+            }
+            ios_backgroundColor={COLORS.border}
           />
         </View>
       </View>
 
-      <ScrollView style={styles.scrollView}>
-        {ALLERGEN_CATEGORIES.map(({ category, items }) => (
-          <View key={category} style={styles.categoryContainer}>
-            <TouchableOpacity
-              style={styles.categoryHeader}
-              onPress={() => toggleCategory(category)}
-            >
-              <Text style={styles.categoryTitle}>{category}</Text>
-              <Text style={styles.expandIcon}>
-                {expandedCategories.has(category) ? "▼" : "▶"}
-              </Text>
-            </TouchableOpacity>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.categoriesContainer}>
+          {ALLERGEN_CATEGORIES.map(({ category, items }) => (
+            <View key={category} style={styles.categoryContainer}>
+              <TouchableOpacity
+                style={styles.categoryHeader}
+                onPress={() => toggleCategory(category)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.categoryTitleContainer}>
+                  <Text style={styles.categoryIcon}>
+                    {expandedCategories.has(category) ? "▼" : "▶"}
+                  </Text>
+                  <Text style={styles.categoryTitle}>{category}</Text>
+                </View>
+                <View style={styles.categoryBadge}>
+                  <Text style={styles.categoryBadgeText}>
+                    {items.reduce((count, item) => {
+                      if (item.children) {
+                        return (
+                          count +
+                          item.children.filter((child) => allergens[child.id])
+                            .length
+                        );
+                      }
+                      return count + (allergens[item.id] ? 1 : 0);
+                    }, 0)}
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
-            {expandedCategories.has(category) && (
-              <View style={styles.itemsContainer}>
-                {items.map((item) => (
-                  <View key={item.id}>
-                    <View style={styles.itemRow}>
-                      <TouchableOpacity
-                        style={styles.itemLabel}
-                        onPress={() => toggleAllergen(item.id, item.children)}
-                      >
-                        {item.children && (
-                          <TouchableOpacity
-                            onPress={() => toggleParent(item.id)}
-                            style={styles.nestedExpandIcon}
-                          >
-                            <Text style={styles.expandIconSmall}>
-                              {expandedParents.has(item.id) ? "▼" : "▶"}
-                            </Text>
-                          </TouchableOpacity>
-                        )}
-                        <Text style={styles.itemText}>{item.label}</Text>
-                      </TouchableOpacity>
-                      <Switch
-                        value={isParentChecked(item)}
-                        onValueChange={() =>
-                          toggleAllergen(item.id, item.children)
-                        }
-                        trackColor={{ false: "#767577", true: "#81b0ff" }}
-                        thumbColor={
-                          isParentChecked(item) ? "#2196F3" : "#f4f3f4"
-                        }
-                      />
-                    </View>
-
-                    {/* Nested children */}
-                    {item.children && expandedParents.has(item.id) && (
-                      <View style={styles.nestedContainer}>
-                        {item.children.map((child) => (
-                          <View key={child.id} style={styles.itemRow}>
+              {expandedCategories.has(category) && (
+                <View style={styles.itemsContainer}>
+                  {items.map((item) => (
+                    <View key={item.id}>
+                      <View style={styles.itemRow}>
+                        <TouchableOpacity
+                          style={styles.itemLabel}
+                          onPress={() => toggleAllergen(item.id, item.children)}
+                          activeOpacity={0.7}
+                        >
+                          {item.children && (
                             <TouchableOpacity
-                              style={styles.itemLabel}
-                              onPress={() => toggleAllergen(child.id)}
+                              onPress={() => toggleParent(item.id)}
+                              style={styles.nestedExpandIcon}
+                              activeOpacity={0.7}
                             >
-                              <Text style={styles.itemText}>{child.label}</Text>
+                              <Text style={styles.expandIconSmall}>
+                                {expandedParents.has(item.id) ? "▼" : "▶"}
+                              </Text>
                             </TouchableOpacity>
-                            <Switch
-                              value={allergens[child.id] || false}
-                              onValueChange={() => toggleAllergen(child.id)}
-                              trackColor={{ false: "#767577", true: "#81b0ff" }}
-                              thumbColor={
-                                allergens[child.id] ? "#2196F3" : "#f4f3f4"
-                              }
-                            />
-                          </View>
-                        ))}
+                          )}
+                          <Text
+                            style={[
+                              styles.itemText,
+                              isParentChecked(item) && styles.itemTextActive,
+                            ]}
+                          >
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+                        <Switch
+                          value={isParentChecked(item)}
+                          onValueChange={() =>
+                            toggleAllergen(item.id, item.children)
+                          }
+                          trackColor={{
+                            false: COLORS.border,
+                            true: COLORS.primaryLight,
+                          }}
+                          thumbColor={
+                            isParentChecked(item)
+                              ? COLORS.primary
+                              : COLORS.white
+                          }
+                          ios_backgroundColor={COLORS.border}
+                        />
                       </View>
-                    )}
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        ))}
+
+                      {/* Nested children */}
+                      {item.children && expandedParents.has(item.id) && (
+                        <View style={styles.nestedContainer}>
+                          {item.children.map((child) => (
+                            <View key={child.id} style={styles.itemRow}>
+                              <TouchableOpacity
+                                style={styles.itemLabel}
+                                onPress={() => toggleAllergen(child.id)}
+                                activeOpacity={0.7}
+                              >
+                                <Text
+                                  style={[
+                                    styles.itemText,
+                                    allergens[child.id] &&
+                                      styles.itemTextActive,
+                                  ]}
+                                >
+                                  {child.label}
+                                </Text>
+                              </TouchableOpacity>
+                              <Switch
+                                value={allergens[child.id] || false}
+                                onValueChange={() => toggleAllergen(child.id)}
+                                trackColor={{
+                                  false: COLORS.border,
+                                  true: COLORS.primaryLight,
+                                }}
+                                thumbColor={
+                                  allergens[child.id]
+                                    ? COLORS.primary
+                                    : COLORS.white
+                                }
+                                ios_backgroundColor={COLORS.border}
+                              />
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
@@ -308,61 +378,100 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   header: {
     padding: 20,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: COLORS.border,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   headerText: {
     fontSize: 16,
-    color: "#555",
-    marginBottom: 8,
+    color: COLORS.textLight,
+    marginBottom: 12,
   },
-  selectedCount: {
+  badge: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+  },
+  badgeText: {
     fontSize: 14,
-    color: "#2196F3",
-    fontWeight: "600",
+    color: COLORS.white,
+    fontWeight: "700",
   },
   scrollView: {
     flex: 1,
   },
+  categoriesContainer: {
+    padding: 16,
+  },
   categoryContainer: {
-    marginBottom: 8,
+    marginBottom: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    overflow: "hidden",
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   categoryHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: COLORS.white,
+  },
+  categoryTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  categoryIcon: {
+    fontSize: 14,
+    color: COLORS.primary,
+    marginRight: 12,
+    width: 20,
   },
   categoryTitle: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: "700",
+    color: COLORS.text,
   },
-  expandIcon: {
-    fontSize: 16,
-    color: "#666",
+  categoryBadge: {
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 28,
+    alignItems: "center",
   },
-  expandIconSmall: {
-    fontSize: 12,
-    color: "#666",
+  categoryBadgeText: {
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: "700",
   },
   itemsContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
   },
   itemRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderTopWidth: 1,
+    borderTopColor: COLORS.background,
   },
   itemLabel: {
     flex: 1,
@@ -370,40 +479,69 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   nestedExpandIcon: {
-    marginRight: 8,
+    marginRight: 12,
     padding: 4,
+  },
+  expandIconSmall: {
+    fontSize: 11,
+    color: COLORS.textLight,
   },
   itemText: {
     fontSize: 16,
-    color: "#333",
+    color: COLORS.text,
+  },
+  itemTextActive: {
+    color: COLORS.primary,
+    fontWeight: "600",
   },
   nestedContainer: {
     paddingLeft: 32,
-    backgroundColor: "#fafafa",
+    backgroundColor: COLORS.background,
   },
   scannerModeSection: {
-    backgroundColor: "#f8f9fa",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    padding: 16,
+    backgroundColor: COLORS.background,
   },
-  scannerModeHeader: {
+  scannerModeCard: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  scannerModeIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.secondaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  iconText: {
+    fontSize: 24,
   },
   scannerModeInfo: {
     flex: 1,
-    marginRight: 16,
+    marginRight: 12,
   },
   scannerModeTitle: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: "700",
+    color: COLORS.text,
     marginBottom: 4,
   },
   scannerModeDescription: {
     fontSize: 13,
-    color: "#666",
+    color: COLORS.textLight,
+    lineHeight: 18,
+  },
+  bottomSpacer: {
+    height: 20,
   },
 });

@@ -1,23 +1,27 @@
 {
   "expo": {
-    "name": "native-food-nutrition-scanner",
-    "slug": "native-food-nutrition-scanner",
+    "name": "got allergen?",
+    "slug": "gotallergen",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "nativefoodnutritionscanner",
+    "icon": "./assets/images/gotallergen_icon.jpg",
+    "scheme": "gotgluten",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.decourtney.gotallergen",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/gotallergen_icon.jpg",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.decourtney.nativefoodnutritionscanner",
+      "package": "com.decourtney.gotallergen",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
@@ -31,12 +35,10 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
+        "react-native-google-mobile-ads",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "androidAppId": "ca-app-pub-3979426636844775/3588162963",
+          "iosAppId": "ca-app-pub-12345678910~123456459"
         }
       ],
       [
@@ -54,8 +56,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "8abe098a-dd62-485d-b762-4328e6140f59"
+        "projectId": "72503b8e-87c7-4527-94d2-f0d6e573f160"
       }
-    }
+    },
+    "owner": "decourtney"
   }
 }

@@ -12,6 +12,8 @@ import {
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
+import { COLORS } from "@/src/constants/theme";
+import { getProductInfoByBarcode, getProductInfoByName } from "@/src/api/openFoodFacts";
 
 export default function Scanner() {
   const params = useLocalSearchParams();
@@ -25,12 +27,6 @@ export default function Scanner() {
     {}
   );
   const lastSavedProductRef = useRef<string | null>(null);
-
-  // // Load user preferences on mount
-  // useEffect(() => {
-  //   loadUserPreferences();
-  //   setProduct(null);
-  // }, []);
 
   // Handle barcode from navigation params (from history)
   useEffect(() => {
@@ -75,39 +71,18 @@ export default function Scanner() {
       setProduct(null);
 
       try {
-        let url: string;
-
         if (barcode) {
-          // Fetch by barcode
-          url = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`;
+          const productData = await getProductInfoByBarcode(barcode);
+          setProduct(productData);
         } else {
-          // Search by product name
-          url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(
-            searchTerm!
-          )}&page_size=1&json=true`;
-        }
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (barcode) {
-          // Barcode lookup response
-          if (data.status === 1 && data.product) {
-            setProduct(data.product);
-          } else {
-            setError("Product not found. Please try another barcode.");
-          }
-        } else {
-          // Search response
-          if (data.products && data.products.length > 0) {
-            setProduct(data.products[0]);
-          } else {
-            setError("No products found. Try a different search term.");
-          }
+          const products = await getProductInfoByName(searchTerm!);
+          setProduct(products[0]); // Get first result
         }
       } catch (err) {
         console.error("Error fetching product:", err);
-        setError("Failed to fetch product. Please check your connection.");
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch product.";
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -182,13 +157,18 @@ export default function Scanner() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.background,
   },
   searchContainer: {
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: COLORS.border,
+    shadowColor: "#00000010",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   resultsContainer: {
     flex: 1,

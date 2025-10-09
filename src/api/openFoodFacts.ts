@@ -1,21 +1,35 @@
-import axios from "axios";
+// API configuration
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL!;
+const API_USER_AGENT = process.env.EXPO_PUBLIC_API_USER_AGENT!;
+const AUTH_USER = process.env.EXPO_PUBLIC_API_AUTH_USER!;
+const AUTH_PASS = process.env.EXPO_PUBLIC_API_AUTH_PASS!;
 
-// Create axios instance with custom user-agent and basic auth for staging
-const api = axios.create({
-  baseURL: "https://world.openfoodfacts.net/api/v2",
-  headers: {
-    "User-Agent": "NativeFoodNutritionScanner/0.1 (donovan.courtney@gmail.com)",
-    Authorization: "Basic " + btoa("off:off"),
-  },
-});
+// Helper function to make API calls with custom headers
+const apiCall = async (endpoint: string) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: {
+      "User-Agent": API_USER_AGENT,
+      Authorization: "Basic " + btoa(`${AUTH_USER}:${AUTH_PASS}`),
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error("Product not found");
+    }
+    throw new Error(`Unable to connect to product database`);
+  }
+
+  return response.json();
+};
 
 // Get product info by barcode
 export const getProductInfoByBarcode = async (barcode: string) => {
   try {
-    const response = await api.get(`/product/${barcode}.json`);
+    const data = await apiCall(`/product/${barcode}.json`);
 
-    if (response.data.status === 1) {
-      return response.data.product;
+    if (data.status === 1) {
+      return data.product;
     } else {
       throw new Error("Product not found");
     }
@@ -25,12 +39,15 @@ export const getProductInfoByBarcode = async (barcode: string) => {
   }
 };
 
+// Get product info by name
 export const getProductInfoByName = async (name: string) => {
   try {
-    const response = await api.get(`/search/${name}`);
+    const data = await apiCall(
+      `/search?search_terms=${encodeURIComponent(name)}`
+    );
 
-    if (response.data.count > 0) {
-      return response.data.products;
+    if (data.count > 0) {
+      return data.products;
     } else {
       throw new Error("No products found");
     }

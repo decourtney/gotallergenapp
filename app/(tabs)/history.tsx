@@ -4,12 +4,12 @@ import {
   getSearchHistory,
   SearchHistoryItem,
 } from "@/src/utils/storageUtils";
+import { Image } from "expo-image";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -26,6 +26,13 @@ export default function History() {
     navigation.setOptions({
       headerShown: true,
       headerTitle: "Search History",
+      headerRight: () => (
+        <Image
+          source={require("@/assets/images/gotallergen_logo.png")}
+          style={{ width: 128, height: 64, marginLeft: 0 }}
+          contentFit="contain"
+        />
+      ),
     });
   }, [navigation]);
 
@@ -112,7 +119,7 @@ export default function History() {
             <Image
               source={{ uri: item.imageUrl }}
               style={styles.productImage}
-              resizeMode="contain"
+              contentFit="contain"
             />
           ) : (
             <View style={[styles.productImage, styles.placeholderImage]}>
