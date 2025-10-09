@@ -4,7 +4,7 @@
     "slug": "gotallergen",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/gotallergen_icon.jpg",
+    "icon": "./assets/images/gotallergen_icon.png",
     "scheme": "gotgluten",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -17,8 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/gotallergen_icon.jpg",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/gotallergen_icon.png"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.decourtney.gotallergen",
@@ -26,6 +25,9 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ]
+      // "config": {
+      //   "googleMobileAdsAppId": "ca-app-pub-3979426636844775~3319843300"
+      // }
     },
     "web": {
       "bundler": "metro",
@@ -33,11 +35,23 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/gotallergen_icon.png",
+          "dark": {
+            "image": "./assets/images/gotallergen_icon.png",
+            "backgroundColor": "#ffffff"
+          },
+          "imageWidth": 200
+        }
+      ],
       "expo-router",
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-3979426636844775/3588162963",
+          "androidAppId": "ca-app-pub-3979426636844775~3319843300",
           "iosAppId": "ca-app-pub-12345678910~123456459"
         }
       ],
@@ -60,5 +74,9 @@
       }
     },
     "owner": "decourtney"
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-3979426636844775~3319843300",
+    "ios_app_id": "ca-app-pub-12345678910~123456459"
   }
 }

@@ -60,7 +60,7 @@ export const AllergenResults = ({
         >
           <View style={styles.emptyState}>
             <Image
-              source={require("@/assets/images/gotallergen_logo.png")}
+              source={require("@/assets/images/gotallergen_large_logo_light.png")}
               style={{ height: 128, width: 256 }}
               contentFit="contain"
               alt="Cartoon cow holding a glass of milk with the phrase, got allergen?, at the bottom"
@@ -134,7 +134,7 @@ export const AllergenResults = ({
             <Image
               source={{ uri: productImage }}
               style={styles.productImage}
-              resizeMode="contain"
+              contentFit="contain"
             />
           )}
           <View style={styles.productDetails}>

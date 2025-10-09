@@ -86,12 +86,18 @@ export const addToSearchHistory = async (
 ): Promise<void> => {
   try {
     const history = await getSearchHistory();
+
+    // Remove any existing entry with the same barcode
+    const filteredHistory = history.filter((h) => h.barcode !== item.barcode);
+
     const newItem: SearchHistoryItem = {
       ...item,
       id: Date.now().toString(),
       timestamp: Date.now(),
     };
-    const updatedHistory = [newItem, ...history].slice(0, 50); // Keep last 50 items
+
+    const updatedHistory = [newItem, ...filteredHistory].slice(0, 50); // Keep last 50 items
+
     await AsyncStorage.setItem(
       SEARCH_HISTORY_KEY,
       JSON.stringify(updatedHistory)
