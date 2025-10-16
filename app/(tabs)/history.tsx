@@ -3,7 +3,7 @@ import {
   deleteHistoryItem,
   getSearchHistory,
   SearchHistoryItem,
-} from "@/src/utils/storageUtils";
+} from "../../src/utils/storageUtils";
 import { useTheme } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
@@ -32,8 +32,8 @@ export default function History() {
         <Image
           source={
             dark
-              ? require("@/assets/images/gotallergen_logo_dark.png")
-              : require("@/assets/images/gotallergen_logo_light.png")
+              ? require("../../assets/images/gotallergen_logo_dark.png")
+              : require("../../assets/images/gotallergen_logo_light.png")
           }
           style={{ width: 128, height: 64, marginLeft: 0 }}
           contentFit="contain"

@@ -1,5 +1,5 @@
-import { COLORS } from "@/src/constants/theme";
-import { AllergenMatch } from "@/src/utils/allergenMatcher";
+import { COLORS } from "../../src/constants/theme";
+import { AllergenMatch } from "../../src/utils/allergenMatcher";
 import { Image } from "expo-image";
 import React, { useState } from "react";
 import {
@@ -60,7 +60,7 @@ export const AllergenResults = ({
         >
           <View style={styles.emptyState}>
             <Image
-              source={require("@/assets/images/gotallergen_large_logo_light.png")}
+              source={require("../../assets/images/gotallergen_large_logo_light.png")}
               style={{ height: 128, width: 256 }}
               contentFit="contain"
               alt="Cartoon cow holding a glass of milk with the phrase, got allergen?, at the bottom"
