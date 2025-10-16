@@ -8,7 +8,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-import { useColorScheme } from "@/src/hooks/useColorScheme";
+import { useColorScheme } from "../src/hooks/useColorScheme";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();

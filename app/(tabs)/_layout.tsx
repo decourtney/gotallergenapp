@@ -1,8 +1,8 @@
-import { HapticTab } from "@/src/components/HapticTab";
-import { IconSymbol } from "@/src/components/ui/IconSymbol";
-import TabBarBackground from "@/src/components/ui/TabBarBackground";
-import { Colors } from "@/src/constants/Colors";
-import { useColorScheme } from "@/src/hooks/useColorScheme";
+import { HapticTab } from "../../src/components/HapticTab";
+import { IconSymbol } from "../../src/components/ui/IconSymbol";
+import TabBarBackground from "../../src/components/ui/TabBarBackground";
+import { Colors } from "../../src/constants/Colors";
+import { useColorScheme } from "../../src/hooks/useColorScheme";
 import { Image } from "expo-image";
 import { Tabs } from "expo-router";
 import React from "react";
@@ -42,7 +42,7 @@ export default function TabLayout() {
             title: "Scan",
             tabBarIcon: () => (
               <Image
-                source={require("@/assets/images/gotallergen_cow.png")}
+                source={require("../../assets/images/gotallergen_cow.png")}
                 style={{
                   width: 28,
                   height: 28,

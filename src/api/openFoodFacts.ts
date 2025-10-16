@@ -9,7 +9,7 @@ const apiCall = async (endpoint: string) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       "User-Agent": API_USER_AGENT,
-      Authorization: "Basic " + btoa(`${AUTH_USER}:${AUTH_PASS}`),
+      // Authorization: "Basic " + btoa(`${AUTH_USER}:${AUTH_PASS}`), // For testing on .net url
     },
   });
   console.log("Making an API call.")

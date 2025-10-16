@@ -23,11 +23,10 @@
       "package": "com.decourtney.gotallergen",
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET",
+        "com.google.android.gms.permission.AD_ID"
       ]
-      // "config": {
-      //   "googleMobileAdsAppId": "ca-app-pub-3979426636844775~3319843300"
-      // }
     },
     "web": {
       "bundler": "metro",
@@ -74,9 +73,5 @@
       }
     },
     "owner": "decourtney"
-  },
-  "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-3979426636844775~3319843300",
-    "ios_app_id": "ca-app-pub-12345678910~123456459"
   }
 }
