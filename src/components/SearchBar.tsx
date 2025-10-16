@@ -1,4 +1,4 @@
-import { COLORS } from "@/src/constants/theme";
+import { COLORS } from "../../src/constants/theme";
 import { Dispatch, SetStateAction, useState } from "react";
 import {
   NativeSyntheticEvent,

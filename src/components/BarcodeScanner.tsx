@@ -1,5 +1,5 @@
-import { IconSymbol } from "@/src/components/ui/IconSymbol";
-import { ScannerMode } from "@/src/utils/storageUtils";
+import { IconSymbol } from "../../src/components/ui/IconSymbol";
+import { ScannerMode } from "../../src/utils/storageUtils";
 import { useIsFocused } from "@react-navigation/native";
 import {
   BarcodeScanningResult,
@@ -18,7 +18,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS } from "@/src/constants/theme";
+import { COLORS } from "../../src/constants/theme";
 
 interface BarcodeScannerProps {
   onBarcodeCapture?: (barcode: string | null) => void;

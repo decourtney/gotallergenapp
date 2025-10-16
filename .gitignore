@@ -24,6 +24,7 @@ expo-env.d.ts
 credentials.json
 
 # Native iOS (if added later)
+/ios
 /ios/Pods/
 /ios/build/
 /ios/*.xcodeproj/

@@ -1,4 +1,4 @@
-import { COLORS } from "@/src/constants/theme";
+import { COLORS } from "../../src/constants/theme";
 import {
   AllergenPreferences,
   getAllergenPreferences,
@@ -7,7 +7,7 @@ import {
   saveScannerMode,
   ScannerMode,
   setSetupComplete,
-} from "@/src/utils/storageUtils";
+} from "../../src/utils/storageUtils";
 import { useTheme } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { useNavigation } from "expo-router";
@@ -135,8 +135,8 @@ export default function Settings() {
         <Image
           source={
             dark
-              ? require("@/assets/images/gotallergen_logo_dark.png")
-              : require("@/assets/images/gotallergen_logo_light.png")
+              ? require("../../assets/images/gotallergen_logo_dark.png")
+              : require("../../assets/images/gotallergen_logo_light.png")
           }
           style={{ width: 128, height: 64, marginLeft: 0 }}
           contentFit="contain"
