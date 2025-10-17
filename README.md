@@ -12,10 +12,12 @@ A React Native app built with Expo that allows users to scan food product barcod
 - **Dark Mode Support**: Automatic theme switching based on system preferences
 
 ## Screenshots 📸
-   <img src="docs/scanner_screen.png" alt="Scanner Screen" width="200" padding="20px" />
-   <img src="docs/scanned_item.png" alt="Scanned Item Screen" width="200" />
-   <img src="docs/settings.png" alt="Settings Screen" width="200" />
-   <img src="docs/history.png" alt="History Screen" width="200" />
+   <div align="center">
+      <img src="docs/scanner_screen.png" alt="Scanner Screen" width="200" padding="20px" />
+      <img src="docs/scanned_item.png" alt="Scanned Item Screen" width="200" />
+      <img src="docs/settings.png" alt="Settings Screen" width="200" />
+      <img src="docs/history.png" alt="History Screen" width="200" />
+   </div>
 
 ## Tech Stack 🛠️
 
