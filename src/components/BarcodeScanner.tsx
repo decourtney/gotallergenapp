@@ -1,5 +1,3 @@
-import { IconSymbol } from "../../src/components/ui/IconSymbol";
-import { ScannerMode } from "../../src/utils/storageUtils";
 import { useIsFocused } from "@react-navigation/native";
 import {
   BarcodeScanningResult,
@@ -18,7 +16,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { IconSymbol } from "../../src/components/ui/IconSymbol";
 import { COLORS } from "../../src/constants/theme";
+import { ScannerMode } from "../../src/utils/storageUtils";
 
 interface BarcodeScannerProps {
   onBarcodeCapture?: (barcode: string | null) => void;
@@ -87,16 +87,16 @@ export default function BarcodeScanner({
     lastScannedRef.current = scanned.data;
 
     // In auto mode, capture immediately
-    if (mode === "auto") {
-      if (scanned.data !== pendingDataRef.current && onBarcodeCapture) {
-        console.log("Barcode auto-scanned:", scanned.data);
-        pendingDataRef.current = scanned.data;
-        onBarcodeCapture(scanned.data);
-      }
+    if (mode === "auto" && onBarcodeCapture) {
+      if (scanned.data == pendingDataRef.current) return;
+
+      pendingDataRef.current = scanned.data;
+      onBarcodeCapture(scanned.data);
     }
   };
 
   const handleManualScan = () => {
+    console.log("handlemanualscan:", lastScannedRef.current);
     if (mode === "manual" && lastScannedRef.current) {
       // Only capture if we have a barcode and it's different from the last one captured
       if (
@@ -232,7 +232,6 @@ const styles = StyleSheet.create({
     left: "50%",
     transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
     padding: 16,
-
   },
   reverseButton: {
     bottom: 16,

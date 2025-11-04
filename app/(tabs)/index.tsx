@@ -1,6 +1,14 @@
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import {
+  getProductInfoByBarcode,
+  getProductInfoByName,
+} from "../../src/api/openFoodFacts";
 import { AllergenResults } from "../../src/components/AllergenResults";
 import BarcodeScanner from "../../src/components/BarcodeScanner";
 import SearchBar from "../../src/components/SearchBar";
+import { COLORS } from "../../src/constants/theme";
 import { matchAllergens } from "../../src/utils/allergenMatcher";
 import {
   addToSearchHistory,
@@ -9,15 +17,7 @@ import {
   getScannerMode,
   ScannerMode,
 } from "../../src/utils/storageUtils";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { COLORS } from "../../src/constants/theme";
-import {
-  getProductInfoByBarcode,
-  getProductInfoByName,
-} from "../../src/api/openFoodFacts";
-import MyBannerAd from "../../src/components/BannerAd";
+// import MyBannerAd from "../../src/components/BannerAd";
 
 export default function Scanner() {
   const params = useLocalSearchParams();
@@ -31,6 +31,7 @@ export default function Scanner() {
     {}
   );
   const lastSavedProductRef = useRef<string | null>(null);
+  const debounceTimer = useRef<number | null>(null);
 
   // Handle barcode from navigation params (from history)
   useEffect(() => {
@@ -60,8 +61,13 @@ export default function Scanner() {
   // Handle barcode scan
   const handleBarcodeCapture = useCallback((scannedBarcode: string | null) => {
     if (!scannedBarcode || scannedBarcode.trim() === "") return;
-    setBarcode(scannedBarcode);
-    setSearchTerm(null); // Clear search if scanning
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    debounceTimer.current = setTimeout(() => {
+      setBarcode(scannedBarcode);
+      setSearchTerm(null); // Clear search if scanning
+    }, 500);
   }, []);
 
   // Fetch product when barcode or search term changes
@@ -155,7 +161,7 @@ export default function Scanner() {
         />
       </View>
 
-      <MyBannerAd />
+      {/* <MyBannerAd /> */}
     </View>
   );
 }
