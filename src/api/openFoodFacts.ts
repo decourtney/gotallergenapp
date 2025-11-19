@@ -1,6 +1,6 @@
 // API configuration
-const API_BASE_URL = "https://world.openfoodfacts.net/api/v2";
-const API_USER_AGENT = "gotallergen/1.1 (donovan.courtney@gmail.com)";
+const API_BASE_URL = "https://world.openfoodfacts.org/api/v2";
+const API_USER_AGENT = "gotallergen/1.0 (donovan.courtney@gmail.com)";
 const AUTH_USER = process.env.EXPO_PUBLIC_API_AUTH_USER!;
 const AUTH_PASS = process.env.EXPO_PUBLIC_API_AUTH_PASS!;
 
@@ -9,7 +9,7 @@ const apiCall = async (endpoint: string) => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       "User-Agent": API_USER_AGENT,
-      Authorization: "Basic " + btoa("off:off"), // for testing
+      // Authorization: "Basic " + btoa("off:off"), // for testing
     },
   });
 
