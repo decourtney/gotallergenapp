@@ -17,7 +17,7 @@ import {
   getScannerMode,
   ScannerMode,
 } from "../../src/utils/storageUtils";
-// import MyBannerAd from "../../src/components/BannerAd";
+import MyBannerAd from "../../src/components/BannerAd";
 
 export default function Scanner() {
   const params = useLocalSearchParams();
@@ -161,7 +161,7 @@ export default function Scanner() {
         />
       </View>
 
-      {/* <MyBannerAd /> */}
+      <MyBannerAd />
     </View>
   );
 }
